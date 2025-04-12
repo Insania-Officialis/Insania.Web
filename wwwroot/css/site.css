@@ -1,31 +1,65 @@
+﻿@charset "UTF-8";
+/*Базовые*/
+/*Страница*/
 html {
-  font-size: 14px;
+  height: 100%;
 }
 
-@media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
-}
-
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
-}
-
-html {
-  position: relative;
-  min-height: 100%;
-}
-
+/*Тело страницы*/
 body {
-  margin-bottom: 60px;
+  height: 100%;
+  background-color: hsl(0, 0%, 10%);
 }
 
-.form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
-  color: var(--bs-secondary-color);
-  text-align: end;
+/*Основной блок*/
+.base-block__div {
+  height: 100%;
 }
 
-.form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
-  text-align: start;
+/*Georgia*/
+@font-face {
+  font-family: "Georgia";
+  src: url("/fonts/Georgia.ttf");
+}
+/*Ofont ru Optimus*/
+@font-face {
+  font-family: "Ofont ru Optimus";
+  src: url("/fonts/Ofont_ru_Optimus.ttf");
+}
+/*Страницы*/
+/*Внешний блок аутентификации*/
+.authentication-block-outer {
+  display: flex;
+  height: 100%;
+}
+
+/*Внутренний блок аутентификации*/
+.authentication-block-inner {
+  display: flex;
+  flex-direction: column;
+  margin: auto;
+}
+
+/*Блок заголовка*/
+.authentication-title__block {
+  display: flex;
+}
+
+/*Текст заголовка*/
+.authentication-title__text {
+  color: hsl(0, 0%, 75%);
+  font-family: Ofont ru Optimus;
+  font-size: 2rem;
+}
+
+/*Блок форм ввода*/
+.authentication-inputs__block {
+  display: flex;
+}
+
+/*Форма ввода форм ввода*/
+.authentication-inputs__input {
+  color: hsl(0, 0%, 75%);
+  font-family: Georgia;
+  font-size: 1rem;
 }

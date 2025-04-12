@@ -1,0 +1,17 @@
+﻿@use "colors.scss";
+
+/*Страница*/
+html {
+    height: 100%;
+}
+
+/*Тело страницы*/
+body {
+    height: 100%;
+    background-color: $background__body--primary;
+}
+
+/*Основной блок*/
+.base-block__div {
+    height: 100%;
+}

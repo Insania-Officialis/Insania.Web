@@ -1,0 +1,38 @@
+﻿@use "../base/colors.scss";
+
+/*Внешний блок аутентификации*/
+.authentication-block-outer {
+    display: flex;
+    height: 100%;
+}
+
+/*Внутренний блок аутентификации*/
+.authentication-block-inner {
+    display: flex;
+    flex-direction: column;
+    margin: auto;
+}
+
+/*Блок заголовка*/
+.authentication-title__block {
+    display: flex;
+}
+
+/*Текст заголовка*/
+.authentication-title__text {
+    color: $background__text--primary;
+    font-family: Ofont ru Optimus;
+    font-size: 2rem;
+}
+
+/*Блок форм ввода*/
+.authentication-inputs__block {
+    display: flex;
+}
+
+/*Форма ввода форм ввода*/
+.authentication-inputs__input {
+    color: $background__text--primary;
+    font-family: Georgia;
+    font-size: 1rem;
+}
