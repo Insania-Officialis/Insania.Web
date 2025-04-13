@@ -8,12 +8,25 @@ html {
 /*Тело страницы*/
 body {
   height: 100%;
-  background-color: hsl(0, 0%, 10%);
+  color: hsl(0, 0%, 75%);
+  font-family: Georgia;
+  font-size: 18px;
+}
+
+/*Поля ввода*/
+input {
+  color: hsl(0, 0%, 75%);
+}
+
+/*Ссылки*/
+a {
+  color: hsl(0, 0%, 75%);
 }
 
 /*Основной блок*/
 .base-block__div {
   height: 100%;
+  background-color: hsl(0, 0%, 10%);
 }
 
 /*Georgia*/
@@ -38,28 +51,55 @@ body {
   display: flex;
   flex-direction: column;
   margin: auto;
+  align-items: center;
+  grid-gap: 2.5rem;
+  min-width: 300px;
 }
 
 /*Блок заголовка*/
 .authentication-title__block {
   display: flex;
+  margin: auto;
 }
 
 /*Текст заголовка*/
 .authentication-title__text {
-  color: hsl(0, 0%, 75%);
   font-family: Ofont ru Optimus;
-  font-size: 2rem;
+  font-size: 2.5rem;
 }
 
-/*Блок форм ввода*/
-.authentication-inputs__block {
+/*Блоки форм ввода и действий*/
+.authentication-inputs__block, .authentication-actions__block {
   display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+/*Блок формы ввода*/
+.authentication-inputs__block {
+  grid-gap: 1.5rem;
+}
+
+/*Блок формы действий*/
+.authentication-actions__block {
+  align-items: center;
+  grid-gap: 1rem;
+  width: 75%;
 }
 
 /*Форма ввода форм ввода*/
 .authentication-inputs__input {
-  color: hsl(0, 0%, 75%);
-  font-family: Georgia;
-  font-size: 1rem;
+  padding-left: 0.5rem;
+  border-bottom-color: hsl(0, 0%, 75%);
+  border-bottom-width: 0.15rem;
+  border-bottom-style: solid;
+}
+
+.authentication-actions__button {
+  padding: 0.25rem;
+  text-align: center;
+  width: 100%;
+  border-radius: 0.25rem;
+  background-color: hsl(0, 0%, 75%);
+  color: hsl(0, 0%, 10%);
 }

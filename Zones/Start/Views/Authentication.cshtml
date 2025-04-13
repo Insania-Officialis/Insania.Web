@@ -1,4 +1,5 @@
 ﻿@page
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 @{
     ViewBag.Title = "Авторизация";
     Layout = "/Zones/Shared/_Layout.cshtml";
@@ -13,6 +14,15 @@
         </div>
         <div class="authentication-inputs__block">
             <input type="text" autocomplete="off" placeholder="Логин" class="authentication-inputs__input" />
+            <input type="text" autocomplete="off" placeholder="Пароль" class="authentication-inputs__input" />
+        </div>
+        <div class="authentication-actions__block">
+            <a class="authentication-actions__button">Войти</a>
+            <a class="authentication-actions__button">Зарегистрироваться</a>
+        </div>
+        <div class="authentication-actions__block">
+            <a class="authentication-actions__link">Забыли пароль?</a>
+            <a class="authentication-actions__link">Зарегистрироваться</a>
         </div>
     </div>
 </div>

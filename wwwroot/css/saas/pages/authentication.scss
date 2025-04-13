@@ -11,28 +11,57 @@
     display: flex;
     flex-direction: column;
     margin: auto;
+    align-items: center;
+    grid-gap: 2.5rem;
+    min-width: 300px;
 }
 
 /*Блок заголовка*/
 .authentication-title__block {
     display: flex;
+    margin: auto;
 }
 
 /*Текст заголовка*/
 .authentication-title__text {
-    color: $background__text--primary;
     font-family: Ofont ru Optimus;
-    font-size: 2rem;
+    font-size: 2.5rem;
 }
 
-/*Блок форм ввода*/
-.authentication-inputs__block {
+/*Блоки форм ввода и действий*/
+.authentication-inputs__block, .authentication-actions__block {
     display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+/*Блок формы ввода*/
+.authentication-inputs__block {
+    grid-gap: 1.5rem;
+}
+
+/*Блок формы действий*/
+.authentication-actions__block {
+    align-items: center;
+    grid-gap: 1rem;
+    width: 75%;
 }
 
 /*Форма ввода форм ввода*/
 .authentication-inputs__input {
-    color: $background__text--primary;
-    font-family: Georgia;
-    font-size: 1rem;
+    padding-left: 0.5rem;
+    border-bottom-color: $color__text--primary;
+    border-bottom-width: 0.15rem;
+    border-bottom-style: solid;
+}
+
+.authentication-actions__button {
+    padding: 0.25rem;
+    text-align: center;
+    width: 100%;
+    border-radius: 0.25rem;
+    background-color: $color__text--primary;
+    color: $background__body--primary;
+}
+
+.authentication-actions__link {
 }

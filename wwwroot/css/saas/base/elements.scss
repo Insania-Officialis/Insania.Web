@@ -8,10 +8,23 @@ html {
 /*Тело страницы*/
 body {
     height: 100%;
-    background-color: $background__body--primary;
+    color: $color__text--primary;
+    font-family: Georgia;
+    font-size: 18px;
+}
+
+/*Поля ввода*/
+input {
+    color: $color__text--primary;
+}
+
+/*Ссылки*/
+a {
+    color: $color__text--primary;
 }
 
 /*Основной блок*/
 .base-block__div {
     height: 100%;
+    background-color: $background__body--primary;
 }
