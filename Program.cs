@@ -1,20 +1,20 @@
-using System.Text.Json.Serialization;
+п»їusing System.Text.Json.Serialization;
 using System.Text.Json;
 
 using Microsoft.AspNetCore.Http.Json;
 
 using Serilog;
 
-//Создания экземпляра постройки веб-приложения
+//РЎРѕР·РґР°РЅРёСЏ СЌРєР·РµРјРїР»СЏСЂР° РїРѕСЃС‚СЂРѕР№РєРё РІРµР±-РїСЂРёР»РѕР¶РµРЅРёСЏ
 var builder = WebApplication.CreateBuilder(args);
 
-//Получение сервисов веб-приложения
+//РџРѕР»СѓС‡РµРЅРёРµ СЃРµСЂРІРёСЃРѕРІ РІРµР±-РїСЂРёР»РѕР¶РµРЅРёСЏ
 IServiceCollection services = builder.Services;
 
-//Получение конфигурации веб-приложения
+//РџРѕР»СѓС‡РµРЅРёРµ РєРѕРЅС„РёРіСѓСЂР°С†РёРё РІРµР±-РїСЂРёР»РѕР¶РµРЅРёСЏ
 ConfigurationManager configuration = builder.Configuration;
 
-//Добавление параметров сериализации и десериализации json
+//Р”РѕР±Р°РІР»РµРЅРёРµ РїР°СЂР°РјРµС‚СЂРѕРІ СЃРµСЂРёР°Р»РёР·Р°С†РёРё Рё РґРµСЃРµСЂРёР°Р»РёР·Р°С†РёРё json
 services.Configure<JsonOptions>(options =>
 {
     options.SerializerOptions.PropertyNameCaseInsensitive = false;
@@ -23,7 +23,7 @@ services.Configure<JsonOptions>(options =>
     options.SerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
 });
 
-//Добавление параметров логирования
+//Р”РѕР±Р°РІР»РµРЅРёРµ РїР°СЂР°РјРµС‚СЂРѕРІ Р»РѕРіРёСЂРѕРІР°РЅРёСЏ
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Verbose()
     .WriteTo.File(path: configuration["LoggingOptions:FilePath"]!, rollingInterval: RollingInterval.Day)
@@ -31,36 +31,38 @@ Log.Logger = new LoggerConfiguration()
     .CreateLogger();
 services.AddLogging(loggingBuilder => loggingBuilder.AddSerilog(Log.Logger, dispose: true));
 
-//Добавление поддержки веб-страниц с параметрами
+//Р”РѕР±Р°РІР»РµРЅРёРµ РїРѕРґРґРµСЂР¶РєРё РІРµР±-СЃС‚СЂР°РЅРёС† СЃ РїР°СЂР°РјРµС‚СЂР°РјРё
 services.AddRazorPages(options =>
 {
-    //Настройка папки по-умолчанию
+    //РќР°СЃС‚СЂРѕР№РєР° РїР°РїРєРё РїРѕ-СѓРјРѕР»С‡Р°РЅРёСЋ
     options.RootDirectory = "/Zones";
 
-    //Настройка стартовой страницы
+    //РќР°СЃС‚СЂРѕР№РєР° СЃС‚Р°СЂС‚РѕРІРѕР№ СЃС‚СЂР°РЅРёС†С‹
     options.Conventions.AddPageRoute("/Start/Views/Authentication", "");
 });
 
-//Построение веб-приложения
+services.AddControllersWithViews().AddRazorRuntimeCompilation();
+
+//РџРѕСЃС‚СЂРѕРµРЅРёРµ РІРµР±-РїСЂРёР»РѕР¶РµРЅРёСЏ
 var app = builder.Build();
 
-//Подключение перенаправления с http на https
+//РџРѕРґРєР»СЋС‡РµРЅРёРµ РїРµСЂРµРЅР°РїСЂР°РІР»РµРЅРёСЏ СЃ http РЅР° https
 app.UseHttpsRedirection();
 
-//Подключение маршрутизации
+//РџРѕРґРєР»СЋС‡РµРЅРёРµ РјР°СЂС€СЂСѓС‚РёР·Р°С†РёРё
 app.UseRouting();
 
-//Подключение авторизации
+//РџРѕРґРєР»СЋС‡РµРЅРёРµ Р°РІС‚РѕСЂРёР·Р°С†РёРё
 app.UseAuthorization();
 
-//Подключение статических файлов
+//РџРѕРґРєР»СЋС‡РµРЅРёРµ СЃС‚Р°С‚РёС‡РµСЃРєРёС… С„Р°Р№Р»РѕРІ
 app.MapStaticAssets();
 
-//Подключение веб-страниц со статическими файлами
+//РџРѕРґРєР»СЋС‡РµРЅРёРµ РІРµР±-СЃС‚СЂР°РЅРёС† СЃРѕ СЃС‚Р°С‚РёС‡РµСЃРєРёРјРё С„Р°Р№Р»Р°РјРё
 app.MapRazorPages().WithStaticAssets();
 
-//Подключение маршрутизации контроллеров
+//РџРѕРґРєР»СЋС‡РµРЅРёРµ РјР°СЂС€СЂСѓС‚РёР·Р°С†РёРё РєРѕРЅС‚СЂРѕР»Р»РµСЂРѕРІ
 app.MapControllerRoute(name: "default", pattern: "{controller=AuthenticationController}/{action=Index}");
 
-//Запуск веб-приложения
+//Р—Р°РїСѓСЃРє РІРµР±-РїСЂРёР»РѕР¶РµРЅРёСЏ
 app.Run();

@@ -1,0 +1,29 @@
+﻿@page
+
+@{
+    ViewBag.Title = "Карта";
+    Layout = "/Zones/Shared/_Layout.cshtml";
+}
+
+<script src="https://api-maps.yandex.ru/2.1/?apikey=2c0658bf-8a66-4ffa-ad14-b1df5b5311ca&lang=ru_RU" type="text/javascript"></script>
+
+<script type="text/javascript">
+    //Запуск инициализации карты, при её готовности
+    ymaps.ready(init);
+
+    //Функция инициализация карты
+    function init() {
+        //Создание карты
+        var map = new ymaps.Map("map", {
+            center: [0, 0], //центр позиционирования
+            zoom: 1, //коэффициент масштабирования
+            controls: [], //элементы управления
+        },{
+            projection: CusprojectiontomProjection,
+        });
+    }
+</script>
+
+<div style="width: 100%; height: 100%">
+    <div id="map" style="width: 100%; height: 90%"></div>
+</div>
