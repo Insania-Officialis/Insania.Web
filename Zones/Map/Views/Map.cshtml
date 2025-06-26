@@ -13,14 +13,79 @@
 
     //Функция инициализация карты
     function init() {
+        //Получение текущего url
+        let currentLocation = window.location.origin;
+        
+        //Создание собственного слоя
+        layer = function () { return new ymaps.Layer(function (tile, zoom) { return currentLocation + '/images/map.png' }) }
+
+        //Добавление слоя в коллекцию слоёв карты
+        ymaps.layer.storage.add('my#layer', layer);
+
+        //Добавление нового типа на основании слоя в коллекцию типов карты
+        ymaps.mapType.storage.add('my#type', new ymaps.MapType(
+            'Пусто',
+            ['my#layer']
+        ));
+
         //Создание карты
         var map = new ymaps.Map("map", {
+            //type: 'my#type', //тип карты
             center: [0, 0], //центр позиционирования
-            zoom: 1, //коэффициент масштабирования
+            zoom: 2, //коэффициент масштабирования
             controls: [], //элементы управления
-        },{
-            projection: CusprojectiontomProjection,
+        }, {
+            //restrictMapArea: true, //ограничение области карты видимой областью
+            restrictMapArea: [[-85, -180], [85, 179]], //ограничение области карты прямоугольной областью
+            minZoom: 2, //минимальный масштаб
+            suppressMapOpenBlock: true, //кнопка "Открыть в Яндекс картах"
         });
+
+        //Ограничение пользовательского передвижения карты
+        map.action.setCorrection(function (tick) {
+            //Получение проекции
+            var projection = map.options.get('projection');
+
+            //Получение размера картыв
+            var mapSize = map.container.getSize();
+
+            //Получение центра
+            var tickCenter = projection.fromGlobalPixels(tick.globalPixelCenter, tick.zoom);
+            
+            //Получение границ
+            var top = [tick.globalPixelCenter[0], tick.globalPixelCenter[1] - mapSize[1] / 2];
+            var bot = [tick.globalPixelCenter[0], tick.globalPixelCenter[1] + mapSize[1] / 2];
+            var tickTop = projection.fromGlobalPixels(top, tick.zoom);
+            var tickBot = projection.fromGlobalPixels(bot, tick.zoom);
+
+            //Проверка пересечения границы по горизонтали
+            if (tickTop[0] > 85) {
+                //Передвижение пользователя
+                tick.globalPixelCenter = projection.toGlobalPixels([85, tickCenter[1]], tick.zoom);
+                tick.globalPixelCenter = [tick.globalPixelCenter[0], tick.globalPixelCenter[1] + mapSize[1] / 2];
+                tick.duration = 0;
+            }
+
+            //Проверка пересечения по горизонтали
+            if (tickBot[0] < -85) {
+                //Передвижение пользователя
+                tick.globalPixelCenter = projection.toGlobalPixels([-85, tickCenter[1]], tick.zoom);
+                tick.globalPixelCenter = [tick.globalPixelCenter[0], tick.globalPixelCenter[1] - mapSize[1] / 2];
+                tick.duration = 0;
+            }
+
+            //Возврат положения
+            return tick;
+        });
+
+        //Создание базового полигона для редактирования
+        var polygonEditor = new ymaps.Polygon([[[30, 40],[30, 50],[40, 50],[40, 40],[30, 40]]]);
+
+        //Добавление базового полигона в коллекцию геообъектов карты
+        map.geoObjects.add(polygonEditor);
+
+        //Запуск редактирование полигона
+        polygonEditor.editor.startEditing();
     }
 </script>
 
