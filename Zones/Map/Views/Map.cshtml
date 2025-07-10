@@ -5,6 +5,7 @@
     Layout = "/Zones/Shared/_Layout.cshtml";
 }
 
+<script src="/js/api/geography_api.js" type="text/javascript"></script>
 <script src="https://api-maps.yandex.ru/2.1/?apikey=2c0658bf-8a66-4ffa-ad14-b1df5b5311ca&lang=ru_RU" type="text/javascript"></script>
 
 <script type="text/javascript">
@@ -12,7 +13,7 @@
     ymaps.ready(init);
 
     //Функция инициализация карты
-    function init() {
+    async function init() {
         //Получение текущего url
         let currentLocation = window.location.origin;
         
@@ -78,14 +79,83 @@
             return tick;
         });
 
-        //Создание базового полигона для редактирования
-        var polygonEditor = new ymaps.Polygon([[[30, 40],[30, 50],[40, 50],[40, 40],[30, 40]]]);
+        //Получение координат географических объектов
+        var coordinates = await getCoordinates();
 
-        //Добавление базового полигона в коллекцию геообъектов карты
-        map.geoObjects.add(polygonEditor);
+        //Проверки
+        if (coordinates?.length) {
+            //Проход по массиву координат географических объектов
+            for (const item of coordinates) {
+                //Проверка элемента координат географического объекта
+                if (item?.items?.length) {
+                    //Проход по массиву координат географического объекта
+                    for (const coordinate of item?.items) {
+                        //Проверка координат географического объекта
+                        if (coordinate?.coordinates.length) {
+                            //Создание полигона
+                            var polygon = new ymaps.Polygon(coordinate.coordinates, {
+                                //Стиль полигона
+                                fillColor: '#00FF0080', //Прозрачный зелёный
+                                strokeColor: '#0000FF', //Синяя обводка
+                                strokeWidth: 2 //Ширина обводки
+                            }, {
+                                //Опции
+                                editorDrawingCursor: 'crosshair', //Курсор при редактировании
+                                fillRule: 'nonZero' //Правило заливки (важно для сложных фигур)
+                            });
 
-        //Запуск редактирование полигона
-        polygonEditor.editor.startEditing();
+                            //Добавление полигона в коллекцию геообъектов карты
+                            map.geoObjects.add(polygon);
+
+                            //Запуск редактирование полигона
+                            polygon.editor.startEditing();
+
+                            //Добавление события измения координат изменяемого полигона
+                            polygon.geometry.events.add('change', function () {
+                                const coords = polygon.geometry.getCoordinates();
+                                console.log("Новые координаты полигона:", coords);
+                            });
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    //Асинхронная функция получения координат
+    async function getCoordinates() {
+        try {
+            //Получение списка географических объектов
+            var geographicObjects = await getGeographyObjectsList();
+
+            //Проверки
+            if (!geographicObjects?.items?.length) throw new Error('Не удалось получить географические объекты');
+
+            //Создание массива промисов для параллельных запросов
+            const coordinatesPromises = geographicObjects.items.map(item => {
+                //Проверка наличия идентификатора
+                if (!item.id) throw new Error('Не указан идентификатор географического объекта: ${item}');
+
+                //Возврат результата
+                return getGeographyObjectsCoordinatesList(item.id);
+            });
+
+            //Ожидание получения всех координат
+            const coordinatesResults = await Promise.all(coordinatesPromises);
+
+            //Получение корректного списка координат
+            const coordinates = coordinatesResults.filter(item => item !== null && item !== undefined);
+
+            //Проверки
+            if (!coordinates?.length) throw new Error('Не удалось получить координаты географических объектов');
+
+            //Возврат результата
+            return coordinates;
+        }
+        catch (error) {
+            console.error('Ошибка получения координат: ', error);
+            return null;
+        }
     }
 </script>
 
