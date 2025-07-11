@@ -1,11 +1,12 @@
 ﻿//Объявление переменной ссылки на api работы с географией
-const baseUrl = 'http://192.168.31.234:7086/';
+const baseUrlGeographyRead = 'http://192.168.31.234:7086/';
+const baseUrlGeographyCommit = 'http://192.168.31.234:7087/';
 
 //Функция получения географических объектов
 async function getGeographyObjectsList() {
     try {
         //Формирование строки запроса
-        const url = new URL(baseUrl + 'geography_objects/list');
+        const url = new URL(baseUrlGeographyRead + 'geography_objects/list');
 
         //Отправка запроса
         const response = await fetch(url, {
@@ -16,19 +17,20 @@ async function getGeographyObjectsList() {
         });
 
         //Проверка статуса ответа
-        if (!response.ok) throw new Error('Некорректный статус ответа: ${response.status}');
+        if (!response.ok) throw new Error(`Некорректный статус ответа: ${response.status}`);
 
         //Преобразование ответа в json
         const data = await response.json();
 
         //Проверка структуры ответа
-        if (!data.success) throw new Error('Неуспешный ответ: ${response.message}');
+        if (!data?.success) throw new Error(`Неуспешный ответ: ${response.message}`);
+        if (!data?.items?.length) throw new Error('Не указаны географические объекты');
 
         //Возврат ответа
-        return data;
+        return data.items;
     } catch (error) {
         //Вывод ошибки
-        console.error('Ошибка:', error);
+        console.error(`Ошибка: ${error}`);
     }
 }
 
@@ -39,7 +41,7 @@ async function getGeographyObjectsCoordinatesList(geographyObjectId = null) {
         if (geographyObjectId === null && geographyObjectId === undefined) throw new Error('Не указан идентификатор географического объекта');
 
         //Формирование строки запроса
-        const url = new URL(baseUrl + 'geography_objects_coordinates/list');
+        const url = new URL(baseUrlGeographyRead + 'geography_objects_coordinates/list');
         url.searchParams.append('geography_object_id', geographyObjectId);
 
         //Отправка запроса
@@ -51,18 +53,68 @@ async function getGeographyObjectsCoordinatesList(geographyObjectId = null) {
         });
 
         //Проверка статуса ответа
-        if (!response.ok) throw new Error('Некорректный статус ответа: ${response.status}');
+        if (!response.ok) throw new Error(`Некорректный статус ответа: ${response.status}`);
 
         //Преобразование ответа в json
         const data = await response.json();
 
         //Проверка структуры ответа
-        if (!data.success) throw new Error('Неуспешный ответ: ${response.message}');
+        if (!data?.success) throw new Error(`Неуспешный ответ: ${response.message}`);
 
         //Возврат ответа
         return data;
     } catch (error) {
         //Вывод ошибки
-        console.error('Ошибка:', error);
+        console.error(`Ошибка: ${error}`);
+    }
+}
+
+//Функция получения координат географических объектов
+async function upgradeGeographyObjectsCoordinates(geographyObjectId = null, coordinateId = null, coordinates = null, token = null) {
+    try {
+        //Проверки
+        if (geographyObjectId === null || geographyObjectId === undefined) throw new Error('Не указан идентификатор географического объекта');
+        if (coordinateId === null || coordinateId === undefined) throw new Error('Не указан идентификатор координаты');
+        if (coordinates === null || coordinates === undefined) throw new Error('Не указаны координаты');
+
+        //Формирование строки запроса
+        const url = new URL(baseUrlGeographyCommit + 'geography_objects_coordinates/upgrade');
+
+        //Формирование тела запроса
+        const requestBody = {
+            geography_object_id: geographyObjectId,
+            coordinate_id: coordinateId,
+            coordinates: coordinates
+        };
+
+        //Формирование заголовков запроса
+        const headers = {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+        };
+
+        //Отправка запроса
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify(requestBody)
+        });
+
+        //Проверка статуса ответа
+        if (!response.ok) throw new Error(`Некорректный статус ответа: ${response.status}`);
+
+        //Преобразование ответа в json
+        const data = await response.json();
+
+        //Проверка структуры ответа
+        if (!data?.success) throw new Error(`Неуспешный ответ: ${response.message}`);
+        if (!data?.id) throw new Error('Не указан идентфиикатор координаты географического ответа');
+
+        //Возврат ответа
+        return data;
+    } catch (error) {
+        //Вывод ошибки
+        console.error(`Ошибка: ${error}`);
     }
 }
