@@ -28,6 +28,42 @@
         background-color: #45a049;
     }
 
+    #editButton {
+        position: absolute;
+        bottom: 20px;
+        right: 300px;
+        z-index: 1000;
+        padding: 10px 20px;
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    #editButton:hover {
+        background-color: #45a049;
+    }
+
+    #draggButton {
+        position: absolute;
+        bottom: 20px;
+        right: 600px;
+        z-index: 1000;
+        padding: 10px 20px;
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    #draggButton:hover {
+        background-color: #45a049;
+    }
+
     #mapContainer {
         position: relative;
         width: 100%;
@@ -47,6 +83,15 @@
     //Новые координаты географического объекта
     var geographyObjectsCoordinates;
 
+    //Карта
+    var map;
+
+    //Признак редактируемости
+    var isEdit = true;
+
+    //Признак перемещения
+    var isDragg = true;
+
     //Запуск инициализации карты, при её готовности
     ymaps.ready(init);
 
@@ -59,7 +104,7 @@
         let currentLocation = window.location.origin;
         
         //Создание собственного слоя
-        layer = function () { return new ymaps.Layer(function (tile, zoom) { return currentLocation + '/images/map.png' }) }
+        layer = function () { return new ymaps.Layer(function () { return currentLocation + '/images/map.png' }) }
 
         //Добавление слоя в коллекцию слоёв карты
         ymaps.layer.storage.add('my#layer', layer);
@@ -71,7 +116,7 @@
         ));
 
         //Создание карты
-        var map = new ymaps.Map("map", {
+        map = new ymaps.Map("map", {
             //type: 'my#type', //тип карты
             center: [0, 0], //центр позиционирования
             zoom: 2, //коэффициент масштабирования
@@ -89,6 +134,20 @@
         saveButton.textContent = 'Сохранить изменения';
         saveButton.onclick = saveChanges;
         document.getElementById('mapContainer').appendChild(saveButton);
+
+        //Создание кнопки включения/отключения редактирования
+        const editButton = document.createElement('button');
+        editButton.id = 'editButton';
+        editButton.textContent = 'Включить/отключить изменения';
+        editButton.onclick = enableEdit;
+        document.getElementById('mapContainer').appendChild(editButton);
+
+        //Создание кнопки включения/отключения перемещения
+        const draggButton = document.createElement('button');
+        draggButton.id = 'draggButton';
+        draggButton.textContent = 'Включить/отключить перемещения';
+        draggButton.onclick = enableDragg;
+        document.getElementById('mapContainer').appendChild(draggButton);
 
         //Ограничение пользовательского передвижения карты
         map.action.setCorrection(function (tick) {
@@ -249,6 +308,66 @@
                     console.log(result);
                 }
             }
+        }
+        catch (error) {
+            console.error(`Ошибка обновления координат ${error}`);
+        }
+    }
+
+    //Функция включения/отключения изменений
+    async function enableEdit() {
+        try {
+            //Проверки
+            if(!map?.geoObjects) throw new Error('Не удалось получить массив геообъектов');
+
+            //Проход по массиву геообъектов
+            map.geoObjects.each(function(geoObject) {
+                //Проверка включения редактирования
+                if(isEdit) {
+                    //Остановка редактирования
+                    geoObject.editor.stopEditing();
+
+                    //Изменение признака редактируемости
+                    isEdit = false;
+                }
+                else {
+                    //Запуск редактирования
+                    geoObject.editor.startEditing();
+
+                    //Изменение признака редактируемости
+                    isEdit = true;
+                }
+            });
+        }
+        catch (error) {
+            console.error(`Ошибка обновления координат ${error}`);
+        }
+    }
+
+    //Функция включения/отключения перемещения
+    async function enableDragg() {
+        try {
+            //Проверки
+            if(!map?.geoObjects) throw new Error('Не удалось получить массив геообъектов');
+
+            //Проход по массиву геообъектов
+            map.geoObjects.each(function(geoObject) {
+                //Проверка включения перемещения
+                if(isDragg) {
+                    //Остановка перемещения
+                    geoObject.options.set({ draggable: false });
+
+                    //Изменение признака редактируемости
+                    isDragg = false;
+                }
+                else {
+                    //Запуск перемещения
+                    geoObject.options.set({ draggable: true });
+
+                    //Изменение признака редактируемости
+                    isDragg = true;
+                }
+            });
         }
         catch (error) {
             console.error(`Ошибка обновления координат ${error}`);
