@@ -325,18 +325,15 @@
                 if(isEdit) {
                     //Остановка редактирования
                     geoObject.editor.stopEditing();
-
-                    //Изменение признака редактируемости
-                    isEdit = false;
                 }
                 else {
                     //Запуск редактирования
                     geoObject.editor.startEditing();
-
-                    //Изменение признака редактируемости
-                    isEdit = true;
                 }
             });
+
+            //Изменение признака редактируемости
+            isEdit = !isEdit;
         }
         catch (error) {
             console.error(`Ошибка обновления координат ${error}`);
@@ -355,18 +352,15 @@
                 if(isDragg) {
                     //Остановка перемещения
                     geoObject.options.set({ draggable: false });
-
-                    //Изменение признака редактируемости
-                    isDragg = false;
                 }
                 else {
                     //Запуск перемещения
                     geoObject.options.set({ draggable: true });
-
-                    //Изменение признака редактируемости
-                    isDragg = true;
                 }
             });
+
+            //Изменение признака перемещения
+            isDragg = !isDragg;
         }
         catch (error) {
             console.error(`Ошибка обновления координат ${error}`);
