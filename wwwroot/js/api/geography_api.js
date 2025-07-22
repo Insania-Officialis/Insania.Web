@@ -3,10 +3,16 @@ const baseUrlGeographyRead = 'http://192.168.31.234:7086/';
 const baseUrlGeographyCommit = 'http://192.168.31.234:7087/';
 
 //Функция получения географических объектов
-async function getGeographyObjectsList() {
+async function getGeographyObjectsList(has_coordinates = true, type_ids = [4,6]) {
     try {
         //Формирование строки запроса
         const url = new URL(baseUrlGeographyRead + 'geography_objects/list');
+        url.searchParams.append('has_coordinates', has_coordinates);
+        if (type_ids && type_ids.length) {
+            type_ids.forEach(id => {
+                url.searchParams.append('type_ids', id.toString());
+            });
+        }
 
         //Отправка запроса
         const response = await fetch(url, {
