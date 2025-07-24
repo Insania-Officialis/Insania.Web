@@ -6,6 +6,7 @@ RUN apt-get update && \
     apt-get install -y curl && \
     curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
     apt-get install -y nodejs
+    npm install -g sass
 
 #Задание рабочего каталога
 WORKDIR /app
@@ -27,6 +28,11 @@ COPY ["Insania.Web", ""]
 
 #Восстановление проекта
 RUN dotnet restore "./Insania.Web.csproj"
+
+#Компиляция SASS (если есть SCSS-файлы)
+RUN if [ -d "wwwroot/scss" ]; then \
+      sass wwwroot/scss/:wwwroot/css/ --style compressed; \
+    fi
 
 #Сборка проекта
 RUN dotnet build "./Insania.Web.csproj" -c $BUILD_CONFIGURATION -o /app/build

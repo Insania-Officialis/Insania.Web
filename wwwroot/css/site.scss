@@ -1,7 +1,7 @@
 ﻿/*Базовые*/
-@import 'saas/base/colors';
-@import 'saas/base/elements';
-@import 'saas/base/fonts.scss';
+@use 'saas/base/colors' as *;
+@use 'saas/base/elements' as *;
+@use 'saas/base/fonts' as *;
 
 /*Страницы*/
-@import 'saas/pages/authentication';
+@use 'saas/pages/authentication' as *;

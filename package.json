@@ -1,0 +1,10 @@
+﻿{
+  "name": "insania-web",
+  "version": "1.0.0",
+  "scripts": {
+    "build-css": "sass wwwroot/css/:wwwroot/css/ --style compressed"
+  },
+  "devDependencies": {
+    "sass": "^1.70.0"
+  }
+}
