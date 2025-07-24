@@ -205,7 +205,7 @@
                         if (!geographyObjectCoordinate?.coordinates?.length) throw new Error('Не указана координата географического объекта');
 
                         //Создание полигона
-                        var polygon = new ymaps.GeoObject(
+                        const polygon = new ymaps.GeoObject(
                             {
                                 //Описание геометрии объекта
                                 geometry: {
@@ -239,7 +239,7 @@
                         polygon.editor.startEditing();
 
                         //Добавление события измения координат изменяемого полигона
-                        polygon.geometry.events.add('change', () => changePolygon(polygon));
+                        polygon.geometry.events.add('change', () => { changePolygon(polygon) });
                     }
                 }
                 catch (error) {

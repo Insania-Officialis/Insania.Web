@@ -1,30 +1,50 @@
-# См. статью по ссылке https://aka.ms/customizecontainer, чтобы узнать как настроить контейнер отладки и как Visual Studio использует этот Dockerfile для создания образов для ускорения отладки.
-
-# Этот этап используется при запуске из VS в быстром режиме (по умолчанию для конфигурации отладки)
+﻿#Использование образа 9 dotnet
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS base
-USER $APP_UID
+
+#Задание рабочего каталога
 WORKDIR /app
-EXPOSE 8080
-EXPOSE 8081
 
+#Проброс порта
+EXPOSE 8082
 
-# Этот этап используется для сборки проекта службы
+#Использование образа sdk 9 dotnet
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
+
+#Создание переменной конфигурации сборки
 ARG BUILD_CONFIGURATION=Release
+
+#Задание рабочего каталога
 WORKDIR /src
-COPY ["Insania.Web.csproj", "."]
+
+#Копирование файлов в контейнер
+COPY ["Insania.Web", ""]
+
+#Восстановление проекта
 RUN dotnet restore "./Insania.Web.csproj"
-COPY . .
-WORKDIR "/src/."
+
+#Задание рабочего каталога
+WORKDIR /src/Insania.Web
+
+#Сборка проекта
 RUN dotnet build "./Insania.Web.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
-# Этот этап используется для публикации проекта службы, который будет скопирован на последний этап
+#Использование образа сборки для публикации
 FROM build AS publish
+
+#Создание переменной конфигурации сборки
 ARG BUILD_CONFIGURATION=Release
+
+#Публикация проекта
 RUN dotnet publish "./Insania.Web.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
-# Этот этап используется в рабочей среде или при запуске из VS в обычном режиме (по умолчанию, когда конфигурация отладки не используется)
+#Использование базового образа для финальных действий
 FROM base AS final
+
+#Задание рабочего каталога
 WORKDIR /app
+
+#Копирование файлов публикации
 COPY --from=publish /app/publish .
+
+#Запуск приложения
 ENTRYPOINT ["dotnet", "Insania.Web.dll"]
