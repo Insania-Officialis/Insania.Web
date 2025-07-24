@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
@@ -27,8 +27,12 @@
   </ItemGroup>
 
   <Target Name="BuildSass" BeforeTargets="Build">
-    <Exec Command="npm install" Condition="!Exists('node_modules')" />
-    <Exec Command="npm run build-css" />
+    <Exec Command="if exist wwwroot\scss ( npm run build-css )"
+         Condition="'$(OS)' == 'Windows_NT'"
+         IgnoreExitCode="true" />
+    <Exec Command="if [ -d 'wwwroot/scss' ]; then npm run build-css; fi"
+         Condition="'$(OS)' != 'Windows_NT'"
+         IgnoreExitCode="true" />
   </Target>
 
 </Project>
