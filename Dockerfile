@@ -22,9 +22,6 @@ COPY ["Insania.Web", ""]
 #Восстановление проекта
 RUN dotnet restore "./Insania.Web.csproj"
 
-#Задание рабочего каталога
-WORKDIR /src/Insania.Web
-
 #Сборка проекта
 RUN dotnet build "./Insania.Web.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
