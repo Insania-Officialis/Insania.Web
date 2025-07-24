@@ -1,6 +1,12 @@
 ﻿#Использование образа 9 dotnet
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS base
 
+#Установка Node.js
+RUN apt-get update && \
+    apt-get install -y curl && \
+    curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
+    apt-get install -y nodejs
+
 #Задание рабочего каталога
 WORKDIR /app
 
