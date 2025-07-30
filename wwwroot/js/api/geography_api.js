@@ -75,7 +75,7 @@ async function getGeographyObjectsCoordinatesList(geographyObjectId = null) {
     }
 }
 
-//Функция получения координат географических объектов
+//Функция обновления координат географических объектов
 async function upgradeGeographyObjectsCoordinates(geographyObjectId = null, coordinateId = null, coordinates = null, token = null) {
     try {
         //Проверки
