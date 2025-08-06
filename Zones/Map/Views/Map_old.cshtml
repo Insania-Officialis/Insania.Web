@@ -1,0 +1,508 @@
+﻿@page
+
+@{
+    ViewBag.Title = "Карта";
+    Layout = "/Zones/Shared/_Layout.cshtml";
+}
+
+<script src="/js/api/geography_api.js" type="text/javascript"></script>
+<script src="/js/api/politics_api.js" type="text/javascript"></script>
+<script src="/js/api/users_api.js" type="text/javascript"></script>
+<script src="https://api-maps.yandex.ru/2.1/?apikey=2c0658bf-8a66-4ffa-ad14-b1df5b5311ca&lang=ru_RU" type="text/javascript"></script>
+
+<style>
+    #saveButton {
+        position: absolute;
+        bottom: 20px;
+        right: 20px;
+        z-index: 1000;
+        padding: 10px 20px;
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    #saveButton:hover {
+        background-color: #45a049;
+    }
+
+    #editButton {
+        position: absolute;
+        bottom: 20px;
+        right: 300px;
+        z-index: 1000;
+        padding: 10px 20px;
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    #editButton:hover {
+        background-color: #45a049;
+    }
+
+    #draggButton {
+        position: absolute;
+        bottom: 20px;
+        right: 600px;
+        z-index: 1000;
+        padding: 10px 20px;
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    #draggButton:hover {
+        background-color: #45a049;
+    }
+
+    #mapContainer {
+        position: relative;
+        width: 100%;
+        height: 100%;
+    }
+
+    #map {
+        width: 100%;
+        height: 90%;
+    }
+</style>
+
+<script type="text/javascript">
+    //Токен гостя
+    var token;
+
+    //Новые координаты географического объекта
+    var geographyObjectsCoordinates;
+
+    //Карта
+    var map;
+
+    //Признак редактируемости
+    var isEdit = true;
+
+    //Признак перемещения
+    var isDragg = true;
+
+    //Запуск инициализации карты, при её готовности
+    ymaps.ready(init);
+
+    //Функция инициализация карты
+    async function init() {
+        //Получение токена
+        token = await login();
+
+        //Получение текущего url
+        let currentLocation = window.location.origin;
+        
+        //Создание собственного слоя
+        layer = function () { return new ymaps.Layer(function () { return currentLocation + '/images/map.png' }) }
+
+        //Добавление слоя в коллекцию слоёв карты
+        ymaps.layer.storage.add('my#layer', layer);
+
+        //Добавление нового типа на основании слоя в коллекцию типов карты
+        ymaps.mapType.storage.add('my#type', new ymaps.MapType(
+            'Пусто',
+            ['my#layer']
+        ));
+
+        //Создание карты
+        map = new ymaps.Map("map", {
+            type: 'my#type', //тип карты
+            center: [0, 0], //центр позиционирования
+            zoom: 2, //коэффициент масштабирования
+            controls: [], //элементы управления
+        }, {
+            //restrictMapArea: true, //ограничение области карты видимой областью
+            restrictMapArea: [[-85, -180], [85, 179]], //ограничение области карты прямоугольной областью
+            minZoom: 2, //минимальный масштаб
+            suppressMapOpenBlock: true, //кнопка "Открыть в Яндекс картах"
+        });
+
+        //Создание кнопки сохранения
+        const saveButton = document.createElement('button');
+        saveButton.id = 'saveButton';
+        saveButton.textContent = 'Сохранить изменения';
+        saveButton.onclick = saveGeographyObjectChanges;
+        document.getElementById('mapContainer').appendChild(saveButton);
+
+        //Создание кнопки включения/отключения редактирования
+        const editButton = document.createElement('button');
+        editButton.id = 'editButton';
+        editButton.textContent = 'Включить/отключить изменения';
+        editButton.onclick = enableEdit;
+        document.getElementById('mapContainer').appendChild(editButton);
+
+        //Создание кнопки включения/отключения перемещения
+        const draggButton = document.createElement('button');
+        draggButton.id = 'draggButton';
+        draggButton.textContent = 'Включить/отключить перемещения';
+        draggButton.onclick = enableDragg;
+        document.getElementById('mapContainer').appendChild(draggButton);
+
+        //Ограничение пользовательского передвижения карты
+        map.action.setCorrection(function (tick) {
+            //Получение проекции
+            var projection = map.options.get('projection');
+
+            //Получение размера картыв
+            var mapSize = map.container.getSize();
+
+            //Получение центра
+            var tickCenter = projection.fromGlobalPixels(tick.globalPixelCenter, tick.zoom);
+            
+            //Получение границ
+            var top = [tick.globalPixelCenter[0], tick.globalPixelCenter[1] - mapSize[1] / 2];
+            var bot = [tick.globalPixelCenter[0], tick.globalPixelCenter[1] + mapSize[1] / 2];
+            var tickTop = projection.fromGlobalPixels(top, tick.zoom);
+            var tickBot = projection.fromGlobalPixels(bot, tick.zoom);
+
+            //Проверка пересечения границы по горизонтали
+            if (tickTop[0] > 85) {
+                //Передвижение пользователя
+                tick.globalPixelCenter = projection.toGlobalPixels([85, tickCenter[1]], tick.zoom);
+                tick.globalPixelCenter = [tick.globalPixelCenter[0], tick.globalPixelCenter[1] + mapSize[1] / 2];
+                tick.duration = 0;
+            }
+
+            //Проверка пересечения по горизонтали
+            if (tickBot[0] < -85) {
+                //Передвижение пользователя
+                tick.globalPixelCenter = projection.toGlobalPixels([-85, tickCenter[1]], tick.zoom);
+                tick.globalPixelCenter = [tick.globalPixelCenter[0], tick.globalPixelCenter[1] - mapSize[1] / 2];
+                tick.duration = 0;
+            }
+
+            //Возврат положения
+            return tick;
+        });
+
+        try {
+            //Получение координат географических объектов
+            geographyObjectsCoordinates = await getGeographyObjectsCoordinates();
+
+            //Проверки
+            if (!geographyObjectsCoordinates?.length) throw new Error('Не указан массив координат географических объектов');
+
+            //Проход по массиву координат географических объектов
+            for (const geographyObjectCoordinates of geographyObjectsCoordinates) {
+                try {
+                    //Проверки
+                    if (!geographyObjectCoordinates?.items?.length) throw new Error('Не указаны координаты географического объекта');
+
+                    //Проход по массиву координат географического объекта
+                    for (const geographyObjectCoordinate of geographyObjectCoordinates.items) {
+                        //Проверки
+                        if (!geographyObjectCoordinate?.coordinates?.length) throw new Error('Не указана координата географического объекта');
+
+                        //Создание полигона
+                        const polygon = new ymaps.GeoObject(
+                            {
+                                //Описание геометрии объекта
+                                geometry: {
+                                    type: "Polygon", //тип
+                                    coordinates: geographyObjectCoordinate.coordinates //координаты вершин
+                                },
+                                //Описание свойств геоообъекта
+                                properties: {
+                                    id: geographyObjectCoordinate.id, //идентификатор координаты географического объекта
+                                    geographyObjectId: geographyObjectCoordinates.id, //идентификатор географического объекта
+                                    coordinateId: geographyObjectCoordinate.coordinate_id, //идентификатор координаты
+                                    name: geographyObjectCoordinates.Name, //наименование географического объекта
+                                    center: geographyObjectCoordinates.center, //центр географического объекта
+                                    zoom: geographyObjectCoordinates.zoom //масштаб географического объекта
+                                }
+                            },
+                            //Описание опций геообъекта
+                            {
+                                draggable: true, //Добавление возможности перетаскивания
+                                fillColor: geographyObjectCoordinate.background_color, //цвет заливки
+                                strokeColor: geographyObjectCoordinate.border_color, //цвет обводки
+                                opacity: 1, //общая прозрачность
+                                strokeWidth: 0.1 //ширина обводка
+                            }
+                        );
+
+                        //Добавление полигона в коллекцию геообъектов карты
+                        map.geoObjects.add(polygon);
+
+                        //Запуск редактирование полигона
+                        polygon.editor.startEditing();
+
+                        //Добавление события измения координат изменяемого полигона
+                        polygon.geometry.events.add('change', () => { changeGeogrpahyObjectPolygon(polygon) });
+                    }
+                }
+                catch (error) {
+                    console.error(`Ошибка обработки координат ${error}`);
+                }
+            }
+        }
+        catch (error) {
+            console.error(`Ошибка получения координат ${error}`);
+        }
+    }
+
+    //Асинхронная функция получения координат географических объектов
+    async function getGeographyObjectsCoordinates() {
+        try {
+            //Получение списка географических объектов
+            var geographicObjects = await getGeographyObjectsList();
+
+            //Создание массива промисов для параллельных запросов
+            const coordinatesPromises = geographicObjects.map(item => {
+                //Проверка наличия идентификатора
+                if (!item.id) throw new Error(`Не указан идентификатор географического объекта: ${item}`);
+
+                //Возврат результата
+                return getGeographyObjectsCoordinatesList(item.id);
+            });
+
+            //Ожидание получения всех координат
+            const coordinatesResults = await Promise.all(coordinatesPromises);
+
+            //Получение корректного списка координат
+            const coordinates = coordinatesResults.filter(item => item !== null && item !== undefined);
+
+            //Проверки
+            if (!coordinates?.length) throw new Error('Не удалось получить координаты географических объектов');
+
+            //Возврат результата
+            return coordinates;
+        }
+        catch (error) {
+            console.error(`Ошибка получения координат ${error}`);
+            return null;
+        }
+    }
+
+    //Асинхронная функция получения координат стран
+    async function getCountriesCoordinates() {
+        try {
+            //Получение списка стран
+            var countries = await getCountriesList();
+
+            //Создание массива промисов для параллельных запросов
+            const coordinatesPromises = countries.map(item => {
+                //Проверка наличия идентификатора
+                if (!item.id) throw new Error(`Не указан идентификатор страны: ${item}`);
+
+                //Возврат результата
+                return getGeographyObjectsCoordinatesList(item.id);
+            });
+
+            //Ожидание получения всех координат
+            const coordinatesResults = await Promise.all(coordinatesPromises);
+
+            //Получение корректного списка координат
+            const coordinates = coordinatesResults.filter(item => item !== null && item !== undefined);
+
+            //Проверки
+            if (!coordinates?.length) throw new Error('Не удалось получить координаты страны');
+
+            //Возврат результата
+            return coordinates;
+        }
+        catch (error) {
+            console.error(`Ошибка получения координат ${error}`);
+            return null;
+        }
+    }
+
+    //Функция формирования полигонов
+    function CreatePolygon(coordinates) {
+        //Проверки
+        if (!coordinates?.length) throw new Error('Не указан массив координат');
+
+        //Формирование переменной результата
+        let lopygons = [];
+
+        //Проход по массиву координат
+        for (const itemCoordinates of coordinates) {
+            try {
+                //Проверки
+                if (!itemCoordinates?.items?.length) throw new Error('Не указаны координаты объекта');
+
+                //Проход по массиву координат объекта
+                for (const coordinate of itemCoordinates.items) {
+                    //Проверки
+                    if (!coordinate?.coordinates?.length) throw new Error('Не указана координата географического объекта');
+
+                    //Создание полигона
+                    const polygon = new ymaps.GeoObject(
+                        {
+                            //Описание геометрии объекта
+                            geometry: {
+                                type: "Polygon", //тип
+                                coordinates: coordinate.coordinates //координаты вершин
+                            },
+                            //Описание свойств геоообъекта
+                            properties: {
+                                id: coordinate.id, //идентификатор координаты географического объекта
+                                objectId: itemCoordinates.id, //идентификатор географического объекта
+                                coordinateId: coordinate.coordinate_id, //идентификатор координаты
+                                name: coordinate.Name, //наименование географического объекта
+                                center: coordinate.center, //центр географического объекта
+                                zoom: coordinate.zoom //масштаб географического объекта
+                            }
+                        },
+                        //Описание опций геообъекта
+                        {
+                            draggable: true, //Добавление возможности перетаскивания
+                            fillColor: coordinate.background_color, //цвет заливки
+                            strokeColor: coordinate.border_color, //цвет обводки
+                            opacity: 1, //общая прозрачность
+                            strokeWidth: 0.1 //ширина обводка
+                        }
+                    );
+
+                    return polygon;
+                }
+            }
+            catch (error) {
+                console.error(`Ошибка обработки координат ${error}`);
+            }
+        }
+    }
+
+
+    //Функция сохранения изменений
+    async function saveGeographyObjectChanges() {
+        try {
+            //Проверки
+            if (!geographyObjectsCoordinates?.length) throw new Error('Не указана коллекция координат географических объектов');
+
+            //Проход по географическим объектам
+            for (geographyObject of geographyObjectsCoordinates) {
+                //Проверки
+                if (!geographyObject) throw new Error('Не указан географический объект');
+                if (!geographyObject?.items?.length) throw new Error('Не указаны координаты географического объекта');
+
+                //Проход по координатам географического объекта
+                for (geographyObjectsCoordinate of geographyObject.items) {
+                    //Проверки
+                    if (!geographyObjectsCoordinate) throw new Error('Не указана координата географического объекта');
+                    
+                    //Отправка запроса
+                    var result = await upgradeGeographyObjectsCoordinates(geographyObject.id, geographyObjectsCoordinate.coordinate_id, geographyObjectsCoordinate.coordinates, token);
+                    console.log(result);
+                }
+            }
+        }
+        catch (error) {
+            console.error(`Ошибка обновления координат ${error}`);
+        }
+    }
+
+    //Функция включения/отключения изменений
+    async function enableEdit() {
+        try {
+            //Проверки
+            if(!map?.geoObjects) throw new Error('Не удалось получить массив геообъектов');
+
+            //Проход по массиву геообъектов
+            map.geoObjects.each(function(geoObject) {
+                //Проверка включения редактирования
+                if(isEdit) {
+                    //Остановка редактирования
+                    geoObject.editor.stopEditing();
+                }
+                else {
+                    //Запуск редактирования
+                    geoObject.editor.startEditing();
+                }
+            });
+
+            //Изменение признака редактируемости
+            isEdit = !isEdit;
+        }
+        catch (error) {
+            console.error(`Ошибка обновления координат ${error}`);
+        }
+    }
+
+    //Функция включения/отключения перемещения
+    async function enableDragg() {
+        try {
+            //Проверки
+            if(!map?.geoObjects) throw new Error('Не удалось получить массив геообъектов');
+
+            //Проход по массиву геообъектов
+            map.geoObjects.each(function(geoObject) {
+                //Проверка включения перемещения
+                if(isDragg) {
+                    //Остановка перемещения
+                    geoObject.options.set({ draggable: false });
+                }
+                else {
+                    //Запуск перемещения
+                    geoObject.options.set({ draggable: true });
+                }
+            });
+
+            //Изменение признака перемещения
+            isDragg = !isDragg;
+        }
+        catch (error) {
+            console.error(`Ошибка обновления координат ${error}`);
+        }
+    }
+
+    //Функция изменения полигона
+    function changeGeogrpahyObjectPolygon(polygon) {
+        try {
+            //Проверки
+            if (!geographyObjectsCoordinates?.length) throw new Error('Не указана коллекция координат географических объектов');
+
+            //Получение идентификатор географического объекта полигона
+            const geographyObjectId = polygon.properties.get('geographyObjectId');
+
+            //Проверки
+            if (!geographyObjectId) throw new Error('Не удалось определить идентификатор географического объекта');
+
+            //Получение географического объекта из коллекции
+            var geographyObject = geographyObjectsCoordinates.find(x => x.id === geographyObjectId);
+
+            //Проверки
+            if (!geographyObject) throw new Error('Не удалось определить по идентификатору географический объект');
+
+            //Получение идентификатора координаты географического объекта
+            const geographyObjectCoordinateId = polygon.properties.get('id');
+
+            //Проверки
+            if (!geographyObjectCoordinateId) throw new Error('Не удалось определить идентификатор координаты географического объекта');
+
+            //Получение координаты географического объекта из коллекции
+            var geographyObjectCoordinate = geographyObject.items.find(x => x.id === geographyObjectCoordinateId);
+
+            //Проверки
+            if (!geographyObjectCoordinate) throw new Error('Не удалось определить по идентификатору координату географического объекта');
+
+            //Получение новых координат
+            const coordinates = polygon.geometry.getCoordinates();
+
+            //Проверки
+            if (!coordinates?.length) throw new Error('Не удалось получить новые координаты географического объекта');
+
+            //Запись данных
+            geographyObjectCoordinate.coordinates = coordinates;
+        }
+        catch (error) {
+            console.error(`Ошибка изменения полигона ${error}`);
+        }
+    }
+</script>
+
+<div id="mapContainer">
+    <div id="map"></div>
+</div>
