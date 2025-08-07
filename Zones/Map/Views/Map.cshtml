@@ -27,11 +27,17 @@
     //Токен гостя
     var token;
 
-    //Координаты географического объекта
+    //Координаты географических объектов
     var geographyObjectsCoordinates;
 
     //Координаты стран
     var countriesCoordinates;
+
+    //Полгионы географических объектов
+    var geographyPolygons;
+
+    //Полгионы стран
+    var countriesPolygons;
 
     //Карта
     var map;
@@ -80,12 +86,22 @@
                 suppressMapOpenBlock: true, //кнопка "Открыть в Яндекс картах"
             });
 
+            //Инициализации коллекций объектов
+            geographyPolygons = new ymaps.GeoObjectCollection();
+            countriesPolygons = new ymaps.GeoObjectCollection();
+
             //Ограничение пользовательского передвижения карты
             map.action.setCorrection(restrictionUserMovement);
 
             //Добавление полигона в коллекцию геообъектов карты
-            map.geoObjects.add(createPolygon(geographyObjectsCoordinates));
-            map.geoObjects.add(createPolygon(countriesCoordinates));
+            map.geoObjects.add(geographyPolygons);
+            geographyPolygons.add(createPolygon(geographyObjectsCoordinates));
+            map.geoObjects.add(countriesPolygons);
+            countriesPolygons.add(createPolygon(countriesCoordinates));
+
+            //Подписки на изменение полигонов
+            document.querySelector('input[value="objects"]').addEventListener('change', updateVisibility);
+            document.querySelector('input[value="countries"]').addEventListener('change', updateVisibility);
         } catch(error) {
             //Вывод ошибки
             console.error('Ошибка инициализации карты:', error);
@@ -212,6 +228,26 @@
         return polygons;
     }
 
+    //Функция обновления видимости
+    function updateVisibility() {
+        //Получение нажатия элементов
+        const objectsChecked = document.querySelector('input[value="objects"]').checked;
+        const countriesChecked = document.querySelector('input[value="countries"]').checked;
+
+        //Изменение видимости
+        geographyPolygons.options.set("visible", objectsChecked);
+        countriesPolygons.options.set("visible", countriesChecked);
+        
+        //Выход, если просто выключили географические объекты
+        if (!objectsChecked) return;
+
+        //Перевключение видимости нижестоящих объектов, если они включены
+        if (countriesChecked) {
+            countriesPolygons.options.set("visible", false);
+            countriesPolygons.options.set("visible", true);
+        }
+    }
+
     //Асинхронная функция получения координат географических объектов
     async function getGeographyObjectsCoordinates() {
         try {
@@ -281,4 +317,13 @@
 
 <div id="mapContainer">
     <div id="map"></div>
+    <div id="layerPanel" class="map__block-layer">
+        <h3>Слои:</h3>
+        <label class="map__label-layer">
+            <input class="map__checkbox-layer" type="checkbox" name="filter" value="objects" checked> Показать объекты
+        </label>
+        <label class="map__label-layer">
+            <input class="map__checkbox-layer" type="checkbox" name="filter" value="countries" checked> Показать страны
+        </label>
+    </div>
 </div>

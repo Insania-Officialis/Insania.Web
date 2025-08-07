@@ -1,1 +1,143 @@
-html{height:100%}body{height:100%;color:hsl(0,0%,75%);font-family:Georgia;font-size:18px}input{color:hsl(0,0%,75%)}a{color:hsl(0,0%,75%)}.base-block__div{height:100%;background-color:hsl(0,0%,10%)}@font-face{font-family:"Georgia";src:url("/fonts/Georgia.ttf")}@font-face{font-family:"Ofont ru Optimus";src:url("/fonts/Ofont_ru_Optimus.ttf")}.authentication-block-outer{display:flex;height:100%}.authentication-block-inner{display:flex;flex-direction:column;margin:auto;align-items:center;grid-gap:2.5rem;min-width:300px}.authentication-title__block{display:flex;margin:auto}.authentication-title__text{font-family:Ofont ru Optimus;font-size:2.5rem}.authentication-inputs__block,.authentication-actions__block{display:flex;flex-direction:column;width:100%}.authentication-inputs__block{grid-gap:1.5rem}.authentication-actions__block{align-items:center;grid-gap:1rem;width:75%}.authentication-inputs__input{padding-left:.5rem;border-bottom-color:hsl(0,0%,75%);border-bottom-width:.15rem;border-bottom-style:solid}.authentication-actions__button{padding:.25rem;text-align:center;width:100%;border-radius:.25rem;background-color:hsl(0,0%,75%);color:hsl(0,0%,10%)}/*# sourceMappingURL=site.css.map */
+﻿@charset "UTF-8";
+/*Базовые*/
+/*Страница*/
+html {
+  height: 100%;
+}
+
+/*Тело страницы*/
+body {
+  height: 100%;
+  color: hsl(0, 0%, 75%);
+  font-family: Georgia;
+  font-size: 18px;
+}
+
+/*Поля ввода*/
+input {
+  color: hsl(0, 0%, 75%);
+}
+
+/*Ссылки*/
+a {
+  color: hsl(0, 0%, 75%);
+}
+
+/*Основной блок*/
+.base-block__div {
+  height: 100%;
+  background-color: hsl(0, 0%, 10%);
+}
+
+/*Georgia*/
+@font-face {
+  font-family: "Georgia";
+  src: url("/fonts/Georgia.ttf");
+}
+/*Ofont ru Optimus*/
+@font-face {
+  font-family: "Ofont ru Optimus";
+  src: url("/fonts/Ofont_ru_Optimus.ttf");
+}
+/*Страницы*/
+/*Внешний блок аутентификации*/
+.authentication-block-outer {
+  display: flex;
+  height: 100%;
+}
+
+/*Внутренний блок аутентификации*/
+.authentication-block-inner {
+  display: flex;
+  flex-direction: column;
+  margin: auto;
+  align-items: center;
+  grid-gap: 2.5rem;
+  min-width: 300px;
+}
+
+/*Блок заголовка*/
+.authentication-title__block {
+  display: flex;
+  margin: auto;
+}
+
+/*Текст заголовка*/
+.authentication-title__text {
+  font-family: Ofont ru Optimus;
+  font-size: 2.5rem;
+}
+
+/*Блоки форм ввода и действий*/
+.authentication-inputs__block, .authentication-actions__block {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+/*Блок формы ввода*/
+.authentication-inputs__block {
+  grid-gap: 1.5rem;
+}
+
+/*Блок формы действий*/
+.authentication-actions__block {
+  align-items: center;
+  grid-gap: 1rem;
+  width: 75%;
+}
+
+/*Форма ввода форм ввода*/
+.authentication-inputs__input {
+  padding-left: 0.5rem;
+  border-bottom-color: hsl(0, 0%, 75%);
+  border-bottom-width: 0.15rem;
+  border-bottom-style: solid;
+}
+
+/*Кнопки формы действий*/
+.authentication-actions__button {
+  padding: 0.25rem;
+  text-align: center;
+  width: 100%;
+  border-radius: 0.25rem;
+  background-color: hsl(0, 0%, 75%);
+  color: hsl(0, 0%, 10%);
+}
+
+.map__block-layer {
+  z-index: 1000;
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem;
+  width: 20rem;
+  top: 1rem;
+  right: 1rem;
+  border-radius: 0.5rem;
+  background-color: hsl(0, 0%, 10%);
+}
+
+.map__label-layer {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.map__checkbox-layer {
+  appearance: none;
+  -webkit-appearance: none;
+  margin: 0;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 0.25rem;
+  background-color: hsl(0, 0%, 75%);
+  cursor: pointer;
+  transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+.map__checkbox-layer:checked {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='hsl(0%2C0%25%2C10%25)' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='m6 10 3 3 6-6'/%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: center;
+}
