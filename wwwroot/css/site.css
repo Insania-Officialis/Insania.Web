@@ -141,3 +141,23 @@ a {
   background-repeat: no-repeat;
   background-position: center;
 }
+
+.map__block-menu-action {
+  z-index: 2;
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  background-color: hsl(0, 0%, 10%);
+}
+
+.map__button-action {
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+}
+.map__button-action:hover {
+  background-color: hsl(0, 0%, 20%);
+}

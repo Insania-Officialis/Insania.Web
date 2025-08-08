@@ -37,3 +37,24 @@
         background-position: center;
     }
 }
+
+.map__block-menu-action {
+    z-index: 2;
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
+    padding: 1rem;
+    border-radius: .5rem;
+    background-color: $background__body--primary;
+}
+
+.map__button-action {
+    padding: .5rem;
+    border-radius: .5rem;
+    cursor: pointer;
+
+    &:hover {
+        background-color: $background__body--seconadary;
+    }
+}

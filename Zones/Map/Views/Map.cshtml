@@ -5,10 +5,10 @@
     Layout = "/Zones/Shared/_Layout.cshtml";
 }
 
-<script src="/js/api/geography_api.js" type="text/javascript"></script>
-<script src="/js/api/politics_api.js" type="text/javascript"></script>
-<script src="/js/api/users_api.js" type="text/javascript"></script>
-<script src="https://api-maps.yandex.ru/2.1/?apikey=2c0658bf-8a66-4ffa-ad14-b1df5b5311ca&lang=ru_RU" type="text/javascript"></script>
+<script src='/js/api/geography_api.js' type='text/javascript'></script>
+<script src='/js/api/politics_api.js' type='text/javascript'></script>
+<script src='/js/api/users_api.js' type='text/javascript'></script>
+<script src='https://api-maps.yandex.ru/2.1/?apikey=2c0658bf-8a66-4ffa-ad14-b1df5b5311ca&lang=ru_RU' type='text/javascript'></script>
 
 <style>
     #mapContainer {
@@ -23,7 +23,7 @@
     }
 </style>
 
-<script type="text/javascript">
+<script type='text/javascript'>
     //Токен гостя
     var token;
 
@@ -74,7 +74,7 @@
             ));
 
             //Создание карты
-            map = new ymaps.Map("map", {
+            map = new ymaps.Map('map', {
                 type: 'my#type', //тип карты
                 center: [39, 3], //центр позиционирования
                 zoom: 2, //коэффициент масштабирования
@@ -83,7 +83,7 @@
                 //restrictMapArea: true, //ограничение области карты видимой областью
                 restrictMapArea: [[-85, -180], [85, 179]], //ограничение области карты прямоугольной областью
                 minZoom: 2, //минимальный масштаб
-                suppressMapOpenBlock: true, //кнопка "Открыть в Яндекс картах"
+                suppressMapOpenBlock: true, //кнопка 'Открыть в Яндекс картах'
             });
 
             //Инициализации коллекций объектов
@@ -192,7 +192,7 @@
                         {
                             //Описание геометрии объекта
                             geometry: {
-                                type: "Polygon", //тип
+                                type: 'Polygon', //тип
                                 coordinates: coordinate.coordinates //координаты вершин
                             },
                             //Описание свойств геоообъекта
@@ -215,6 +215,9 @@
                         }
                     );
 
+                    //Добавление события нажатия
+                    polygon.events.add('contextmenu', viewMenuAction);
+
                     //Добавление полигона в массив
                     polygons.add(polygon);
                 }
@@ -235,17 +238,36 @@
         const countriesChecked = document.querySelector('input[value="countries"]').checked;
 
         //Изменение видимости
-        geographyPolygons.options.set("visible", objectsChecked);
-        countriesPolygons.options.set("visible", countriesChecked);
+        geographyPolygons.options.set('visible', objectsChecked);
+        countriesPolygons.options.set('visible', countriesChecked);
         
         //Выход, если просто выключили географические объекты
         if (!objectsChecked) return;
 
         //Перевключение видимости нижестоящих объектов, если они включены
         if (countriesChecked) {
-            countriesPolygons.options.set("visible", false);
-            countriesPolygons.options.set("visible", true);
+            countriesPolygons.options.set('visible', false);
+            countriesPolygons.options.set('visible', true);
         }
+    }
+
+    //Функция отображения меню действий
+    function viewMenuAction(e) {
+        //Получение меню со страницы
+        var menu = document.getElementById('menuAction');
+
+        //Скрытие имеющегося меню
+        if (menu.style.visibility === 'visible') {
+            menu.style.visibility = 'hidden';
+        }
+
+        //Смена позиции меню
+        menu.style.left = e.get('pagePixels')[0] + 'px';
+        menu.style.top = e.get('pagePixels')[1] + 'px';
+
+        //Отображение меню
+        menu.style.visibility = 'visible';
+        console.log(e);
     }
 
     //Асинхронная функция получения координат географических объектов
@@ -315,15 +337,21 @@
     }
 </script>
 
-<div id="mapContainer">
-    <div id="map"></div>
-    <div id="layerPanel" class="map__block-layer">
+<div id='mapContainer'>
+    <div id='map'></div>
+    <div id='layerPanel' class='map__block-layer'>
         <h3>Слои:</h3>
-        <label class="map__label-layer">
-            <input class="map__checkbox-layer" type="checkbox" name="filter" value="objects" checked> Показать объекты
+        <label class='map__label-layer'>
+            <input class='map__checkbox-layer' type='checkbox' name='filter' value='objects' checked> Показать объекты
         </label>
-        <label class="map__label-layer">
-            <input class="map__checkbox-layer" type="checkbox" name="filter" value="countries" checked> Показать страны
+        <label class='map__label-layer'>
+            <input class='map__checkbox-layer' type='checkbox' name='filter' value='countries' checked> Показать страны
         </label>
+    </div>
+    <div id='menuAction' class='map__block-menu-action' style='visibility: hidden'>
+        <h3>Действия:</h3>
+        <div class='map__button-action'>Редактировать</div>
+        <div class='map__button-action'>Переместить</div>
+        <div class='map__button-action'>Сохранить</div>
     </div>
 </div>
