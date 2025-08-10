@@ -34,7 +34,7 @@
     var countriesCoordinates;
 
     //Полгионы географических объектов
-    var geographyPolygons;
+    var geographyObjectsPolygons;
 
     //Полгионы стран
     var countriesPolygons;
@@ -42,8 +42,14 @@
     //Карта
     var map;
 
-    //Признак редактируемости
-    var isEdit = true;
+    //Последний выбранный полигон
+    var lastSelectesPolygon = null;
+
+    //Текущий редактируемый полигон
+    var currentEditingPolygon = null;
+
+    //Текущий перемещаемый полигон
+    var currentDraggingPolygon = null;
 
     //Признак перемещения
     var isDragg = true;
@@ -87,21 +93,26 @@
             });
 
             //Инициализации коллекций объектов
-            geographyPolygons = new ymaps.GeoObjectCollection();
+            geographyObjectsPolygons = new ymaps.GeoObjectCollection();
             countriesPolygons = new ymaps.GeoObjectCollection();
 
             //Ограничение пользовательского передвижения карты
             map.action.setCorrection(restrictionUserMovement);
 
             //Добавление полигона в коллекцию геообъектов карты
-            map.geoObjects.add(geographyPolygons);
-            geographyPolygons.add(createPolygon(geographyObjectsCoordinates));
+            map.geoObjects.add(geographyObjectsPolygons);
+            geographyObjectsPolygons.add(createPolygon(geographyObjectsCoordinates, 'geographyObjects'));
             map.geoObjects.add(countriesPolygons);
-            countriesPolygons.add(createPolygon(countriesCoordinates));
+            countriesPolygons.add(createPolygon(countriesCoordinates, 'politics'));
 
             //Подписки на изменение полигонов
             document.querySelector('input[value="objects"]').addEventListener('change', updateVisibility);
             document.querySelector('input[value="countries"]').addEventListener('change', updateVisibility);
+                
+            //Подписка на кнопку "Редактировать"
+            document.querySelector('#menuAction .map__button-action:nth-child(2)').addEventListener('click', () => { polygonAction('edit'); });
+            document.querySelector('#menuAction .map__button-action:nth-child(3)').addEventListener('click', () => { polygonAction('dragg'); });
+            document.querySelector('#menuAction .map__button-action:nth-child(4)').addEventListener('click', async () => { await save(); });
         } catch(error) {
             //Вывод ошибки
             console.error('Ошибка инициализации карты:', error);
@@ -167,9 +178,8 @@
         }
     }
 
-
     //Функция создания полигонов
-    function createPolygon(coordinates) {
+    function createPolygon(coordinates, type) {
         //Проверки
         if (!coordinates?.length) throw new Error('Не указан массив координат');
 
@@ -200,7 +210,8 @@
                                 id: coordinate.id, //идентификатор координаты географического объекта
                                 objectId: itemCoordinates.id, //идентификатор географического объекта
                                 coordinateId: coordinate.coordinate_id, //идентификатор координаты
-                                name: coordinate.Name, //наименование географического объекта
+                                type: type, //тип координат
+                                name: itemCoordinates.name, //наименование географического объекта
                                 center: coordinate.center, //центр географического объекта
                                 zoom: coordinate.zoom //масштаб географического объекта
                             }
@@ -210,13 +221,33 @@
                             draggable: false, //Добавление возможности перетаскивания
                             fillColor: coordinate.background_color, //цвет заливки
                             strokeColor: coordinate.border_color, //цвет обводки
-                            opacity: 1, //общая прозрачность
+                            fillOpacity: 0.75, //общая прозрачность
                             strokeWidth: 0.1 //ширина обводка
                         }
                     );
 
                     //Добавление события нажатия
                     polygon.events.add('contextmenu', viewMenuAction);
+
+                    //Добавление события наведение курсора
+                    polygon.events.add('mouseenter', function (e) {
+                        //Полученик параметров объекта
+                        const id = e.get('target').properties.get('objectId');
+                        const type = e.get('target').properties.get('type');
+                        
+                        //Увеличение прозрачности
+                        highlightPolygons(id, type, 1);
+                    });
+
+                    //Добавление события уведения курсора
+                    polygon.events.add('mouseleave', function (e) {
+                        //Полученик параметров объекта
+                        const id = e.get('target').properties.get('objectId');
+                        const type = e.get('target').properties.get('type');
+                            
+                        //Сброс прозрачности
+                        resetPolygonsOpacity(id, type);
+                    });
 
                     //Добавление полигона в массив
                     polygons.add(polygon);
@@ -238,7 +269,7 @@
         const countriesChecked = document.querySelector('input[value="countries"]').checked;
 
         //Изменение видимости
-        geographyPolygons.options.set('visible', objectsChecked);
+        geographyObjectsPolygons.options.set('visible', objectsChecked);
         countriesPolygons.options.set('visible', countriesChecked);
         
         //Выход, если просто выключили географические объекты
@@ -256,18 +287,142 @@
         //Получение меню со страницы
         var menu = document.getElementById('menuAction');
 
-        //Скрытие имеющегося меню
-        if (menu.style.visibility === 'visible') {
-            menu.style.visibility = 'hidden';
-        }
+        //Получение нажатого объекта
+        var target = e.get('target');
+        var objectName = target.properties.get('name');
+
+        //Обновление заголовка меню
+        var menuTitle = menu.querySelector('h2');
+        menuTitle.textContent = objectName;
 
         //Смена позиции меню
         menu.style.left = e.get('pagePixels')[0] + 'px';
         menu.style.top = e.get('pagePixels')[1] + 'px';
 
+        //Получение кнопки редактировани
+        let editButton = document.getElementById('editButton');
+
+        //Смена текста кнопки в зависимости от редактируемости полигона
+        if (target.properties.get('id') === currentEditingPolygon?.properties?.get('id') && target.properties.get('type') === currentEditingPolygon?.properties?.get('type')) editButton.textContent = 'Отключить редактирование';
+        else editButton.textContent = 'Включить редактирование';
+
+        //Получение кнопки перемещения
+        let dragsButton = document.getElementById('dragsButton');
+
+        //Смена текста кнопки в зависимости от перемещаемости полигона
+        if (target.properties.get('id') === currentDraggingPolygon?.properties?.get('id') && target.properties.get('type') === currentDraggingPolygon?.properties?.get('type')) dragsButton.textContent = 'Отключить перемещение';
+        else dragsButton.textContent = 'Включить перемещение';
+
+        //Запись выбранного полигона
+        lastSelectesPolygon = { target: target };
+
         //Отображение меню
         menu.style.visibility = 'visible';
-        console.log(e);
+        
+        //Добавление события закрытия меню действий при клике вне него
+        document.addEventListener('click', closeMenuOnClickOutside);
+    }
+
+    //Функция подсветки всех полигонов объекта
+    function highlightPolygons(objectId, type, opacity) {
+        [geographyObjectsPolygons, countriesPolygons].forEach(x => {
+            x.each(y => {
+                y.each(z => {
+                    if (z.properties.get('objectId') === objectId && z.properties.get('type') === type) z.options.set('fillOpacity', opacity);
+                });
+            });
+        });
+    }
+    
+    //Функция сброса прозрачности
+    const resetPolygonsOpacity = (objectId, type) => highlightPolygons(objectId, type, 0.75);
+
+    //Функция закрытия меню при клике вне его
+    function closeMenuOnClickOutside(e) {
+        //Получение меню со страницы
+        const menu = document.getElementById('menuAction');
+        if (!menu.contains(e.target)) {
+            //Скрытие имеющегося меню
+            menu.style.visibility = 'hidden';
+
+            //Удаление последнего выбранного полигона
+            lastSelectesPolygon = null;
+
+            //Удаление обработчика нажатия вне меню
+            document.removeEventListener('click', closeMenuOnClickOutside);
+        }
+    }
+
+    //Функция включения/отключения действий с полигоном
+    function polygonAction(action) {
+        //Скрытие меню
+        document.getElementById('menuAction').style.visibility = 'hidden';
+
+        //Получение последнего выбранного полигона
+        const target = lastSelectesPolygon.target;
+
+        //Если есть выбранный полигон
+        if (target) {
+            //Если это тот же полигон, что уже редактируется и действие - редактирование
+            if (currentEditingPolygon && currentEditingPolygon === target && action === 'edit') {
+                //Отключение редактирования
+                target.editor.stopEditing();
+
+                //Сброс редактируемого полигона
+                currentEditingPolygon = null;
+
+                //Выход
+                return;
+            }
+
+            //Если это тот же полигон, что уже перемещается и действие - перемещение
+            if (currentDraggingPolygon && currentDraggingPolygon === target && action === 'dragg') {
+                //Отключение перемещения
+                currentDraggingPolygon.options.set({ draggable: false });
+
+                //Сброс перемещаемого полигона
+                currentDraggingPolygon = null;
+
+                //Выход
+                return;
+            }
+
+            //Отключение редактирования предыдушего полигона, при его наличии
+            if (currentEditingPolygon) currentEditingPolygon.editor.stopEditing();
+
+            //Отключение перемещения предыдушего полигона, при его наличии
+            if (currentDraggingPolygon) currentDraggingPolygon.options.set({ draggable: false });
+            
+            //Отключение редактирования
+            target.editor.stopEditing();
+
+            //Сброс редактируемого полигона
+            currentEditingPolygon = null;
+
+            //Отключение перемещения
+            target.options.set({ draggable: false });
+
+            //Сброс перемещаемого полигона
+            currentDraggingPolygon = null;
+
+            //Если действие - редактирование
+            if (action === 'edit') {
+                //Включение редактирования выбранного полигона
+                target.editor.startEditing();
+
+                //Запись редактируемого полигона
+                currentEditingPolygon = target;
+            }
+
+            //Если действие - перемещение
+            if (action === 'dragg') {
+                //Включение перемещения выбранного полигона
+                target.options.set({ draggable: true });
+
+                //Запись перемещаемого полигона
+                currentDraggingPolygon = target;
+            }
+        }
     }
 
     //Асинхронная функция получения координат географических объектов
@@ -335,6 +490,51 @@
             return null;
         }
     }
+
+    //Асинхронная функция сохранения полигона
+    async function save() {
+        //Скрытие меню
+        document.getElementById('menuAction').style.visibility = 'hidden';
+
+        //Получение последнего выбранного полигона
+        const target = lastSelectesPolygon.target;
+
+        //Если есть выбранный полигон
+        if (target) {
+            //Отключение редактирования
+            target.editor.stopEditing();
+
+            //Сброс редактируемого полигона
+            currentEditingPolygon = null;
+
+            //Отключение перемещения
+            target.options.set({ draggable: false });
+
+            //Сброс перемещаемого полигона
+            currentDraggingPolygon = null;
+
+            //Получение данных полигона
+            const type = target.properties.get('type'); //тип
+            const coordinates = target.geometry.getCoordinates(); //координаты
+            const objectId = target.properties.get('objectId'); //идентификатор объекта
+            const coordinateId = target.properties.get('coordinateId'); //идентификатор координаты
+            console.log([type, coordinates, objectId, coordinateId].join(';'));
+
+            try {
+                //Отправка запроса, в зависимости от типа
+                switch (type) {
+                    case 'geographyObjects' : {
+                        var result = await upgradeGeographyObjectsCoordinates(objectId, coordinateId, coordinates, token);
+                        console.log(result);
+
+                    } break;
+                }
+            }
+            catch (error) {
+                console.error(`Ошибка обновления координат ${error}`);
+            }
+        }
+    }
 </script>
 
 <div id='mapContainer'>
@@ -349,9 +549,9 @@
         </label>
     </div>
     <div id='menuAction' class='map__block-menu-action' style='visibility: hidden'>
-        <h3>Действия:</h3>
-        <div class='map__button-action'>Редактировать</div>
-        <div class='map__button-action'>Переместить</div>
+        <h2 style='text-align: center;'></h2>
+        <div id='editButton' class='map__button-action'></div>
+        <div id='dragsButton' class='map__button-action'></div>
         <div class='map__button-action'>Сохранить</div>
     </div>
 </div>
