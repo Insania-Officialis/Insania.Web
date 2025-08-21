@@ -1,5 +1,5 @@
 ﻿//Объявление переменной ссылки на api работы с политикиой
-const baseUrlPoliticsRead = 'http://192.168.31.234:7083/';
+const baseUrlPoliticsRead = 'http://192.168.1.104:7083/';
 
 //Функция получения стран
 async function getCountriesList(has_coordinates = true) {
