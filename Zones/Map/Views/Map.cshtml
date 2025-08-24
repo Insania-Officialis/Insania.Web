@@ -97,8 +97,9 @@
                 const bounds = map.getBounds();
                 const southWest = bounds[0]; // [широта, долгота] юго-западного угла
                 const northEast = bounds[1]; // [широта, долгота] северо-восточного угла
-                console.log('Юго-запад:', southWest);
-                console.log('Северо-восток:', northEast);
+                const zoom = map.getZoom();
+                console.info('Границы:', [...southWest, ...northEast]);
+                console.info('Уровень масштабирования:', zoom);
             });
 
             //Инициализации коллекций объектов
