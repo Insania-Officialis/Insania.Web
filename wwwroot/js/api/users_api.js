@@ -1,5 +1,5 @@
 ﻿//Объявление переменной ссылки на api работы с географией
-const baseUrlUsers = 'http://192.168.1.104:7080/';
+const baseUrlUsers = 'http://192.168.31.234:7080/';
 
 //Функция аутентификации
 async function login(login = 'guest', password = '1') {
