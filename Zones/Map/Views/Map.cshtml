@@ -454,7 +454,7 @@
     async function getGeographyObjectsCoordinates() {
         try {
             //Получение списка географических объектов
-            var geographicObjects = await getGeographyObjectsList();
+            var geographicObjects = await getGeographyObjectsList(token);
 
             //Создание массива промисов для параллельных запросов
             const coordinatesPromises = geographicObjects.map(item => {
@@ -462,7 +462,7 @@
                 if (!item.id) throw new Error(`Не указан идентификатор географического объекта: ${item}`);
 
                 //Возврат результата
-                return getGeographyObjectsCoordinatesList(item.id);
+                return getGeographyObjectsCoordinatesList(token, item.id);
             });
 
             //Ожидание получения всех координат
@@ -487,7 +487,7 @@
     async function getCountriesCoordinates() {
         try {
             //Получение списка стран
-            var countries = await getCountriesList();
+            var countries = await getCountriesList(token);
 
             //Создание массива промисов для параллельных запросов
             const coordinatesPromises = countries.map(item => {
@@ -495,7 +495,7 @@
                 if (!item.id) throw new Error(`Не указан идентификатор страны: ${item}`);
 
                 //Возврат результата
-                return getCountriesCoordinatesList(item.id);
+                return getCountriesCoordinatesList(token, item.id);
             });
 
             //Ожидание получения всех координат
@@ -520,7 +520,7 @@
     async function getRiversCoordinates() {
         try {
             //Получение списка рек
-            var rivers = await getGeographyObjectsList(true, [8]);
+            var rivers = await getGeographyObjectsList(token, true, [8]);
 
             //Создание массива промисов для параллельных запросов
             const coordinatesPromises = rivers.map(item => {
@@ -528,7 +528,7 @@
                 if (!item.id) throw new Error(`Не указан идентификатор реки: ${item}`);
 
                 //Возврат результата
-                return getGeographyObjectsCoordinatesList(item.id);
+                return getGeographyObjectsCoordinatesList(token, item.id);
             });
 
             //Ожидание получения всех координат

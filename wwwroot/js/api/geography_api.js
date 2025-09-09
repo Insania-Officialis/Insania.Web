@@ -3,7 +3,7 @@ const baseUrlGeographyRead = 'http://192.168.31.234:7086/';
 const baseUrlGeographyCommit = 'http://192.168.31.234:7087/';
 
 //Функция получения географических объектов
-async function getGeographyObjectsList(has_coordinates = true, type_ids = [4,6]) {
+async function getGeographyObjectsList(token, has_coordinates = true, type_ids = [4,6]) {
     try {
         //Формирование строки запроса
         const url = new URL(baseUrlGeographyRead + 'geography_objects/list');
@@ -18,7 +18,8 @@ async function getGeographyObjectsList(has_coordinates = true, type_ids = [4,6])
         const response = await fetch(url, {
             method: 'GET',
             headers: {
-                'Accept': 'application/json'
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${token}`,
             }
         });
 
@@ -41,7 +42,7 @@ async function getGeographyObjectsList(has_coordinates = true, type_ids = [4,6])
 }
 
 //Функция получения координат географических объектов
-async function getGeographyObjectsCoordinatesList(geographyObjectId = null) {
+async function getGeographyObjectsCoordinatesList(token, geographyObjectId = null) {
     try {
         //Проверки
         if (geographyObjectId === null && geographyObjectId === undefined) throw new Error('Не указан идентификатор географического объекта');
@@ -54,7 +55,8 @@ async function getGeographyObjectsCoordinatesList(geographyObjectId = null) {
         const response = await fetch(url, {
             method: 'GET',
             headers: {
-                'Accept': 'application/json'
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${token}`,
             }
         });
 

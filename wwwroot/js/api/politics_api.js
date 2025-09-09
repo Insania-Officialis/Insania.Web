@@ -2,7 +2,7 @@
 const baseUrlPoliticsRead = 'http://192.168.31.234:7083/';
 
 //Функция получения стран
-async function getCountriesList(has_coordinates = true) {
+async function getCountriesList(token, has_coordinates = true) {
     try {
         //Формирование строки запроса
         const url = new URL(baseUrlPoliticsRead + 'countries/list');
@@ -14,7 +14,8 @@ async function getCountriesList(has_coordinates = true) {
         const response = await fetch(url, {
             method: 'GET',
             headers: {
-                'Accept': 'application/json'
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${token}`,
             }
         });
 
@@ -37,7 +38,7 @@ async function getCountriesList(has_coordinates = true) {
 }
 
 //Функция получения координат стран
-async function getCountriesCoordinatesList(countryId = null) {
+async function getCountriesCoordinatesList(token, countryId = null) {
     try {
         //Проверки
         if (countryId === null && countryId === undefined) throw new Error('Не указан идентификатор страны');
@@ -52,7 +53,8 @@ async function getCountriesCoordinatesList(countryId = null) {
         const response = await fetch(url, {
             method: 'GET',
             headers: {
-                'Accept': 'application/json'
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${token}`,
             }
         });
 
