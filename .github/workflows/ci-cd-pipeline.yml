@@ -21,4 +21,5 @@ jobs:
     - name: Git pull in target directory
       #Переход в папку и копирование файлов
       run: |
-        cd C:/Insania/Insania.Web && git pull origin main
+        cd C:/Insania/Insania.Web
+        git pull origin main
