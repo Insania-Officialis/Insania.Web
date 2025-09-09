@@ -299,6 +299,12 @@
             countriesPolygons.options.set('visible', false);
             countriesPolygons.options.set('visible', true);
         }
+
+        //Перевключение видимости нижестоящих объектов, если они включены
+        if (riversChecked) {
+            riversChecked.options.set('visible', false);
+            riversChecked.options.set('visible', true);
+        }
     }
 
     //Функция отображения меню действий
