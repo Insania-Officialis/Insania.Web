@@ -12,12 +12,10 @@ on:
 jobs:
   #Задание для сборки
   build:
-    #Запуск на Ubuntu
-    runs-on: ubuntu-latest  
-    
+    #Запуск на собственных серверах
+    runs-on: self-hosted
 
     #Шаги выполнения задания
     steps:
-
     #Получение кода из репозитория
     - uses: actions/checkout@v4
