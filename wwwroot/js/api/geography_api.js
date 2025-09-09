@@ -3,7 +3,7 @@ const baseUrlGeographyRead = 'http://192.168.31.234:7086/';
 const baseUrlGeographyCommit = 'http://192.168.31.234:7087/';
 
 //Функция получения географических объектов
-async function getGeographyObjectsList(has_coordinates = true, type_ids = [4,6,8]) {
+async function getGeographyObjectsList(has_coordinates = true, type_ids = [4,6]) {
     try {
         //Формирование строки запроса
         const url = new URL(baseUrlGeographyRead + 'geography_objects/list');

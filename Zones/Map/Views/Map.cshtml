@@ -33,11 +33,17 @@
     //Координаты стран
     var countriesCoordinates;
 
+    //Координаты рек
+    var riversCoordinates;
+
     //Полгионы географических объектов
     var geographyObjectsPolygons;
 
     //Полгионы стран
     var countriesPolygons;
+
+    //Полгионы рек
+    var riversPolygons;
 
     //Карта
     var map;
@@ -63,6 +69,7 @@
             //Получение координат
             geographyObjectsCoordinates = await getGeographyObjectsCoordinates();
             countriesCoordinates = await getCountriesCoordinates();
+            riversCoordinates = await getRiversCoordinates();
 
             //Создание фона карты
             let layer = createMapBackground();
@@ -105,12 +112,15 @@
             //Инициализации коллекций объектов
             geographyObjectsPolygons = new ymaps.GeoObjectCollection();
             countriesPolygons = new ymaps.GeoObjectCollection();
+            riversPolygons = new ymaps.GeoObjectCollection();
 
             //Добавление полигонов в коллекции геообъектов карты
             map.geoObjects.add(geographyObjectsPolygons);
             geographyObjectsPolygons.add(createPolygon(geographyObjectsCoordinates, 'geographyObjects'));
             map.geoObjects.add(countriesPolygons);
             countriesPolygons.add(createPolygon(countriesCoordinates, 'politics'));
+            map.geoObjects.add(riversPolygons);
+            riversPolygons.add(createPolygon(riversCoordinates, 'rivers'));
 
             //Подписки на изменение маркера видимости
             document.querySelector('input[value="objects"]').addEventListener('change', updateVisibility);
@@ -274,10 +284,12 @@
         //Получение нажатия элементов
         const objectsChecked = document.querySelector('input[value="objects"]').checked;
         const countriesChecked = document.querySelector('input[value="countries"]').checked;
+        const riversChecked = document.querySelector('input[value="rivers"]').checked;
 
         //Изменение видимости
         geographyObjectsPolygons.options.set('visible', objectsChecked);
         countriesPolygons.options.set('visible', countriesChecked);
+        riversChecked.options.set('visible', countriesChecked);
         
         //Выход, если просто выключили географические объекты
         if (!objectsChecked) return;
@@ -498,6 +510,39 @@
         }
     }
 
+    //Асинхронная функция получения координат рек
+    async function getRiversCoordinates() {
+        try {
+            //Получение списка рек
+            var rivers = await getGeographyObjectsList(true, [8]);
+
+            //Создание массива промисов для параллельных запросов
+            const coordinatesPromises = rivers.map(item => {
+                //Проверка наличия идентификатора
+                if (!item.id) throw new Error(`Не указан идентификатор реки: ${item}`);
+
+                //Возврат результата
+                return getGeographyObjectsCoordinatesList(item.id);
+            });
+
+            //Ожидание получения всех координат
+            const coordinatesResults = await Promise.all(coordinatesPromises);
+
+            //Получение корректного списка координат
+            const coordinates = coordinatesResults.filter(item => item !== null && item !== undefined);
+
+            //Проверки
+            if (!coordinates?.length) throw new Error('Не удалось получить координаты реки');
+
+            //Возврат результата
+            return coordinates;
+        }
+        catch (error) {
+            console.error(`Ошибка получения координат ${error}`);
+            return null;
+        }
+    }
+
     //Асинхронная функция сохранения полигона
     async function save() {
         //Скрытие меню
@@ -553,6 +598,9 @@
         </label>
         <label class='map__label-layer'>
             <input class='map__checkbox-layer' type='checkbox' name='filter' value='countries' checked> Показать страны
+        </label>
+        <label class='map__label-layer'>
+            <input class='map__checkbox-layer' type='checkbox' name='filter' value='rivers' checked> Показать реки
         </label>
     </div>
     <div id='menuAction' class='map__block-menu-action' style='visibility: hidden'>
