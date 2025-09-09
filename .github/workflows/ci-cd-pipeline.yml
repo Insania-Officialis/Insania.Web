@@ -18,8 +18,8 @@ jobs:
     #Шаги выполнения задания
     steps:
     #Получение кода из репозитория
-    - name: Git pull in target directory
-      #Переход в папку и копирование файлов
-      run: |
-        cd C:/Insania/Insania.Web
-        git pull origin main
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        path: C:/Insania/Insania.Web
+        ref: main
