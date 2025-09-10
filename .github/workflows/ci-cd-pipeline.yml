@@ -20,7 +20,7 @@ jobs:
     #Добавление папки в безопасные директории
     - name: Configure git safe directory
       run: git config --global --add safe.directory C:\Insania\Insania.Web
-      shell: bash -l {0}
+      shell: cmd
     #Получение кода из репозитория
     - name: Checkout code
       uses: actions/checkout@v4
