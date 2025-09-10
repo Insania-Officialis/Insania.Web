@@ -23,7 +23,7 @@ jobs:
       shell: cmd
     #Получение кода из репозитория
     - name: Checkout code
-      uses: actions/checkout@v4
-      with:
-        path: C:\Insania\Insania.Web
-        ref: main
+      #Переход в папку и копирование файлов
+      run: |
+        cd C:/Insania/Insania.Web
+        git pull origin main
