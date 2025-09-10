@@ -17,14 +17,6 @@ jobs:
 
     #Шаги выполнения задания
     steps:
-    #Добавление папки в безопасные директории
-    - name: Configure git safe directory
-      run: git config --global --add safe.directory C:\Insania\Insania.Web
-      shell: cmd
-    #Выдача прав на папку
-    - name: Fix git permissions
-      run: icacls "C:\Insania\Insania.Web\.git" /reset /T
-      shell: cmd
     #Получение кода из репозитория
     - name: Checkout code
       #Переход в папку и копирование файлов
