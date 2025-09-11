@@ -43,14 +43,19 @@ jobs:
       run: |
         cd C:/Insania
         #Ожидание перед проверкой
-        timeout 30s bash -c 'until docker-compose ps insania_web | grep -q "Up"; do sleep 2; done'
+        Start-Sleep -Seconds 10
         
         #Проверка окончательного статуса
-        if docker-compose ps insania_web | grep -q "Up"; then
-            echo "✅ Container started successfully!"
-            docker-compose ps insania_web
-        else
-            echo "❌ Container failed to start"
-            docker-compose logs insania_web
+        $status = docker-compose ps insania_web
+        Write-Host "Container status: $status"
+        
+        if ($status -like "*Up*") {
+            Write-Host "✅ Container is running successfully!"
+            #Показ детальной информации
+            docker-compose ps
+        } else {
+            Write-Host "❌ Container failed to start"
+            #Показ логов для диагностики
+            docker-compose logs insania_web --tail=20
             exit 1
-        fi
+        }
