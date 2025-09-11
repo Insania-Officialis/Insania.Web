@@ -23,3 +23,34 @@ jobs:
       run: |
         cd C:/Insania/Insania.Web
         git pull origin main
+    #Остановка контейнера
+    - name: Stop container
+      run: |
+        cd C:/Insania
+        docker-compose stop insania_web
+    #Сборка контейнера
+    - name: Build container
+      run: |
+        cd C:/Insania
+        docker-compose build insania_web
+    #Запуск контейнера
+    - name: Start container
+      run: |
+        cd C:/Insania
+        docker-compose up -d insania_web
+    #Проверка статуса
+    - name: Verify container status
+      run: |
+        cd C:/Insania
+        #Ожидание перед проверкой
+        timeout 30s bash -c 'until docker-compose ps insania_web | grep -q "Up"; do sleep 2; done'
+        
+        #Проверка окончательного статуса
+        if docker-compose ps insania_web | grep -q "Up"; then
+            echo "✅ Container started successfully!"
+            docker-compose ps insania_web
+        else
+            echo "❌ Container failed to start"
+            docker-compose logs insania_web
+            exit 1
+        fi
