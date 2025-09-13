@@ -20,6 +20,15 @@ jobs:
 
     #Шаги выполнения задания
     steps:
+    #Определение директории
+    - name: Get directory
+      run: |
+        if [ "$RUNNER_OS" == "Windows" ]; then
+          echo "WORKDIR=C:/Insania" >> $GITHUB_ENV
+        else
+          echo "WORKDIR=/app" >> $GITHUB_ENV
+        fi
+      shell: bash
     #Переход в рабочую директорию и обновление кода
     - name: Update code
       run: |
