@@ -17,45 +17,59 @@ jobs:
 
     #Шаги выполнения задания
     steps:
+    #Определение операвционной системы
+    - name: Detect OS and setup
+      id: detect_os
+      run: |
+        if [ "$RUNNER_OS" == "Windows" ]; then
+          echo "OS=windows" >> $GITHUB_OUTPUT
+          echo "WORKDIR=C:/Insania" >> $GITHUB_OUTPUT
+        else
+          echo "OS=linux" >> $GITHUB_OUTPUT
+          echo "WORKDIR=/app" >> $GITHUB_OUTPUT
+        fi
     #Получение кода из репозитория
     - name: Checkout code
-      #Переход в папку и копирование файлов
       run: |
-        cd C:/Insania/Insania.Web
-        git pull origin main
+        cd "${{ steps.detect_os.outputs.WORKDIR }}"
+        cd Insania.Web
+        git pull
     #Остановка контейнера
     - name: Stop container
       run: |
-        cd C:/Insania
+        cd "${{ steps.detect_os.outputs.WORKDIR }}"
         docker-compose stop insania_web
     #Сборка контейнера
     - name: Build container
       run: |
-        cd C:/Insania
+        cd "${{ steps.detect_os.outputs.WORKDIR }}"
         docker-compose build insania_web
     #Запуск контейнера
     - name: Start container
       run: |
-        cd C:/Insania
+        cd "${{ steps.detect_os.outputs.WORKDIR }}"
         docker-compose up -d insania_web
     #Проверка статуса
     - name: Verify container status
       run: |
-        cd C:/Insania
+        cd "${{ steps.detect_os.outputs.WORKDIR }}"
+
         #Ожидание перед проверкой
-        Start-Sleep -Seconds 10
+        if [ "${{ steps.detect_os.outputs.OS }}" == "windows" ]; then
+          Start-Sleep -Seconds 10
+        else
+          sleep 10
+        fi
         
         #Проверка окончательного статуса
         $status = docker-compose ps insania_web
-        Write-Host "Container status: $status"
+        echo "Container status: $status"
         
-        if ($status -like "*Up*") {
-            Write-Host "✅ Container is running successfully!"
-            #Показ детальной информации
-            docker-compose ps
-        } else {
-            Write-Host "❌ Container failed to start"
-            #Показ логов для диагностики
-            docker-compose logs insania_web --tail=20
-            exit 1
-        }
+        if echo "$status" | grep -q "Up"; then
+          echo "✅ Container is running successfully!"
+          docker-compose ps
+        else
+          echo "❌ Container failed to start"
+          docker-compose logs insania_web --tail=20
+          exit 1
+        fi
