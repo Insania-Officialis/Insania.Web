@@ -20,77 +20,126 @@ jobs:
 
     #Шаги выполнения задания
     steps:
-    #Определение директории
-    - name: Get directory
+    #Получение кода из репозитория
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    #Настройка для Linux
+    - name: Setup Linux environment
+      if: runner.os == 'Linux'
       run: |
-        if [ "$RUNNER_OS" == "Windows" ]; then
-          echo "WORKDIR=C:/Insania" >> $GITHUB_ENV
-        else
-          echo "WORKDIR=/app" >> $GITHUB_ENV
-        fi
+        git config --global --add safe.directory /app/Insania.Web
+        echo "WORKDIR=/app" >> $GITHUB_ENV
       shell: bash
-    #Переход в рабочую директорию и обновление кода
-    - name: Update code
+
+    #Настройка для Windows
+    - name: Setup Windows environment
+      if: runner.os == 'Windows'
       run: |
-        cd "$WORKDIR"
+        git config --global --add safe.directory *
+        echo "WORKDIR=C:/Insania" >> $GITHUB_ENV
+      shell: pwsh
+
+    #Обновление кода для Linux
+    - name: Update code (Linux)
+      if: runner.os == 'Linux'
+      run: |
+        cd "$env:WORKDIR"
         cd Insania.Web
         git pull
       shell: bash
 
-    #Остановка контейнера
-    - name: Stop container
+    #Обновление кода для Windows
+    - name: Update code (Windows)
+      if: runner.os == 'Windows'
       run: |
-        cd "$WORKDIR"
+        cd $env:WORKDIR
+        cd Insania.Web
+        git pull
+      shell: pwsh
+
+    #Остановка контейнера для Linux
+    - name: Stop container (Linux)
+      if: runner.os == 'Linux'
+      run: |
+        cd "$env:WORKDIR"
         docker-compose stop insania_web
       shell: bash
 
-    #Сборка контейнера
-    - name: Build container
+    #Остановка контейнера для Windows
+    - name: Stop container (Windows)
+      if: runner.os == 'Windows'
       run: |
-        cd "$WORKDIR"
+        cd $env:WORKDIR
+        docker-compose stop insania_web
+      shell: pwsh
+
+    #Сборка контейнера для Linux
+    - name: Build container (Linux)
+      if: runner.os == 'Linux'
+      run: |
+        cd "$env:WORKDIR"
         docker-compose build insania_web
       shell: bash
 
-    #Запуск контейнера
-    - name: Start container
+    #Сборка контейнера для Windows
+    - name: Build container (Windows)
+      if: runner.os == 'Windows'
       run: |
-        cd "$WORKDIR"
+        cd $env:WORKDIR
+        docker-compose build insania_web
+      shell: pwsh
+
+    #Запуск контейнера для Linux
+    - name: Start container (Linux)
+      if: runner.os == 'Linux'
+      run: |
+        cd "$env:WORKDIR"
         docker-compose up -d insania_web
       shell: bash
 
-    #Проверка статуса контейнера
-    - name: Verify container status
+    #Запуск контейнера для Windows
+    - name: Start container (Windows)
+      if: runner.os == 'Windows'
       run: |
-        cd "$WORKDIR"
+        cd $env:WORKDIR
+        docker-compose up -d insania_web
+      shell: pwsh
 
-        #Ожидание перед проверкой
-        if [ "$RUNNER_OS" == "Windows" ]; then
-          #Для Windows - PowerShell синтаксис
-          Start-Sleep -Seconds 10
-          $status = docker-compose ps insania_web
-          Write-Host "Container status: $status"
-          
-          if ($status -like "*Up*") {
-            Write-Host "✅ Container is running successfully!"
-            docker-compose ps
-          } else {
-            Write-Host "❌ Container failed to start"
-            docker-compose logs insania_web --tail=20
-            exit 1
-          }
+    #Проверка статуса контейнера для Linux
+    - name: Verify container status (Linux)
+      if: runner.os == 'Linux'
+      run: |
+        cd "$env:WORKDIR"
+        sleep 10
+        status=$(docker-compose ps insania_web)
+        echo "Container status: $status"
+        
+        if echo "$status" | grep -q "Up"; then
+          echo "✅ Container is running successfully!"
+          docker-compose ps
         else
-          #Для Linux - bash синтаксис
-          sleep 10
-          status=$(docker-compose ps insania_web)
-          echo "Container status: $status"
-          
-          if echo "$status" | grep -q "Up"; then
-            echo "✅ Container is running successfully!"
-            docker-compose ps
-          else
-            echo "❌ Container failed to start"
-            docker-compose logs insania_web --tail=20
-            exit 1
-          fi
+          echo "❌ Container failed to start"
+          docker-compose logs insania_web --tail=20
+          exit 1
         fi
       shell: bash
+
+    #Проверка статуса контейнера для Windows
+    - name: Verify container status (Windows)
+      if: runner.os == 'Windows'
+      run: |
+        cd $env:WORKDIR
+        Start-Sleep -Seconds 10
+        $status = docker-compose ps insania_web
+        Write-Host "Container status: $status"
+        
+        if ($status -like "*Up*") {
+          Write-Host "✅ Container is running successfully!"
+          docker-compose ps
+        } else {
+          Write-Host "❌ Container failed to start"
+          docker-compose logs insania_web --tail=20
+          exit 1
+        fi
+      shell: pwsh
