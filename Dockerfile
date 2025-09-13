@@ -15,7 +15,7 @@ RUN apt-get update && \
 
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["Insania.Web/", "."]
+COPY . .
 
 #Восстановление npm-зависимостей
 RUN if [ -f "package.json" ]; then \
