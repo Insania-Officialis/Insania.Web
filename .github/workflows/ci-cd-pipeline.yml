@@ -20,15 +20,10 @@ jobs:
 
     #Шаги выполнения задания
     steps:
-    #Получение кода из репозитория
-    - name: Checkout code
-      uses: actions/checkout@v4
-
     #Настройка для Linux
     - name: Setup Linux environment
       if: runner.os == 'Linux'
       run: |
-        git config --global --add safe.directory /app/Insania.Web
         echo "WORKDIR=/app" >> $GITHUB_ENV
       shell: bash
 
@@ -36,7 +31,6 @@ jobs:
     - name: Setup Windows environment
       if: runner.os == 'Windows'
       run: |
-        git config --global --add safe.directory *
         echo "WORKDIR=C:/Insania" >> $GITHUB_ENV
       shell: pwsh
 
@@ -44,10 +38,12 @@ jobs:
     - name: Update code (Linux)
       if: runner.os == 'Linux'
       run: |
-        cd "$env:WORKDIR"
+        cd $WORKDIR
         cd Insania.Web
         git pull
       shell: bash
+      env:
+        WORKDIR: ${{ env.WORKDIR }}
 
     #Обновление кода для Windows
     - name: Update code (Windows)
@@ -57,14 +53,18 @@ jobs:
         cd Insania.Web
         git pull
       shell: pwsh
+      env:
+        WORKDIR: ${{ env.WORKDIR }}
 
     #Остановка контейнера для Linux
     - name: Stop container (Linux)
       if: runner.os == 'Linux'
       run: |
-        cd "$env:WORKDIR"
+        cd $WORKDIR
         docker-compose stop insania_web
       shell: bash
+      env:
+        WORKDIR: ${{ env.WORKDIR }}
 
     #Остановка контейнера для Windows
     - name: Stop container (Windows)
@@ -73,14 +73,18 @@ jobs:
         cd $env:WORKDIR
         docker-compose stop insania_web
       shell: pwsh
+      env:
+        WORKDIR: ${{ env.WORKDIR }}
 
     #Сборка контейнера для Linux
     - name: Build container (Linux)
       if: runner.os == 'Linux'
       run: |
-        cd "$env:WORKDIR"
+        cd $WORKDIR
         docker-compose build insania_web
       shell: bash
+      env:
+        WORKDIR: ${{ env.WORKDIR }}
 
     #Сборка контейнера для Windows
     - name: Build container (Windows)
@@ -89,14 +93,18 @@ jobs:
         cd $env:WORKDIR
         docker-compose build insania_web
       shell: pwsh
+      env:
+        WORKDIR: ${{ env.WORKDIR }}
 
     #Запуск контейнера для Linux
     - name: Start container (Linux)
       if: runner.os == 'Linux'
       run: |
-        cd "$env:WORKDIR"
+        cd $WORKDIR
         docker-compose up -d insania_web
       shell: bash
+      env:
+        WORKDIR: ${{ env.WORKDIR }}
 
     #Запуск контейнера для Windows
     - name: Start container (Windows)
@@ -105,12 +113,14 @@ jobs:
         cd $env:WORKDIR
         docker-compose up -d insania_web
       shell: pwsh
+      env:
+        WORKDIR: ${{ env.WORKDIR }}
 
     #Проверка статуса контейнера для Linux
     - name: Verify container status (Linux)
       if: runner.os == 'Linux'
       run: |
-        cd "$env:WORKDIR"
+        cd $WORKDIR
         sleep 10
         status=$(docker-compose ps insania_web)
         echo "Container status: $status"
@@ -124,6 +134,8 @@ jobs:
           exit 1
         fi
       shell: bash
+      env:
+        WORKDIR: ${{ env.WORKDIR }}
 
     #Проверка статуса контейнера для Windows
     - name: Verify container status (Windows)
@@ -143,3 +155,5 @@ jobs:
           exit 1
         fi
       shell: pwsh
+      env:
+        WORKDIR: ${{ env.WORKDIR }}
