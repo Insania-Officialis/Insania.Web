@@ -135,5 +135,5 @@ jobs:
           Write-Host "❌ Container failed to start"
           docker-compose logs insania_web --tail=20
           exit 1
-        fi
+        }
       shell: powershell
