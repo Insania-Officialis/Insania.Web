@@ -13,11 +13,11 @@
             </div>
         </div>
         <div class="authentication-inputs__block">
-            <input type="text" autocomplete="off" placeholder="Логин" class="authentication-inputs__input" />
-            <input type="text" autocomplete="off" placeholder="Пароль" class="authentication-inputs__input" />
+            <input type="text" id="login" autocomplete="off" placeholder="Логин" class="authentication-inputs__input" />
+            <input type="text" id="password" autocomplete="off" placeholder="Пароль" class="authentication-inputs__input" oninput="handlePasswordInput(this)" />
         </div>
         <div id="authentication_buttons" class="authentication-actions__block">
-            <a class="authentication-actions__button">Войти</a>
+            <a class="authentication-actions__button" onclick="getRealPassword()">Войти</a>
             <a class="authentication-actions__button">Зарегистрироваться</a>
         </div>
         <div class="authentication-actions__block">
@@ -26,3 +26,116 @@
         </div>
     </div>
 </div>
+
+<script>
+    //Объявление общих переменных
+    let realPassword = ''; //реальный пароль
+    let lastDisplayedValue = ''; //последнеее введённое значение
+
+    //Функция обработки ввода пароля
+    function handlePasswordInput(input) {
+        // //Получение текущего значения
+        // const currentValue = input.value;
+
+        // //Получение позиции курсора
+        // const cursorPosition = input.selectionStart;
+
+        // //Получение конца выделения строки
+        // const selectionEnd = input.selectionEnd;
+
+        // //Флаг выделения текста
+        // const hasSelection = selectionEnd > cursorPosition;
+
+        // //Проверка ввода в пустое поле
+        // if (lastDisplayedValue === '' && currentValue.length === 1) {
+        //     realPassword = currentValue;
+        //     input.value = '•';
+        //     lastDisplayedValue = '•';
+        //     return;
+        // }
+
+        // //Если есть выделение
+        // if (hasSelection) handleSelectionCase(input, currentValue, cursorPosition, selectionEnd);
+        // //Если произошла вставка
+        // else if (currentValue.length > lastDisplayedValue.length) handleAdditionCase(input, currentValue, cursorPosition);
+        // //Если произошло удаление
+        // else if (currentValue.length < lastDisplayedValue.length) handleDeletionCase(input, cursorPosition);
+        // //Иначе
+        // else {
+        //     //Логгирование
+        //     console.error('Непредвиденный тестовый сценарий');
+
+        //     //Выход
+        //     return
+        // }
+
+        // //Обновление отображения
+        // updateDisplay(input, cursorPosition, selectionEnd, hasSelection);
+    }
+
+    //Обработка случая с выделением текста
+    function handleSelectionCase(input, currentValue, cursorPosition, selectionEnd) {
+        //Удаление выделенной части
+        realPassword = realPassword.slice(0, cursorPosition) + realPassword.slice(selectionEnd);
+
+        //Если произошла вставка 
+        if (currentValue.length > 0) {
+            // Получаем новые символы (то, что было введено вместо выделенного)
+            const newText = currentValue.slice(cursorPosition, cursorPosition + (currentValue.length - (realPassword.length + (selectionEnd - cursorPosition))));
+
+            // Вставляем новые символы
+            realPassword = realPassword.slice(0, cursorPosition) + newText + realPassword.slice(cursorPosition);
+        }
+    }
+
+    // Обработка добавления символов
+    function handleAdditionCase(input, currentValue, cursorPosition) {
+        const addedChars = currentValue.length - lastDisplayedValue.length;
+
+        // Получаем новые символы (то, что было добавлено)
+        const newChars = currentValue.slice(cursorPosition - addedChars, cursorPosition);
+
+        // Вставляем новые символы в реальный пароль
+        realPassword = realPassword.slice(0, cursorPosition - addedChars) + newChars + realPassword.slice(cursorPosition - addedChars);
+    }
+
+    // Обработка удаления символов
+    function handleDeletionCase(input, cursorPosition) {
+        const deletedCount = lastDisplayedValue.length - input.value.length;
+
+        // Удаляем символы из реального пароля
+        realPassword = realPassword.slice(0, cursorPosition) + realPassword.slice(cursorPosition + deletedCount);
+    }
+
+    // Обновление отображения
+    function updateDisplay(input, cursorPosition, selectionEnd, hasSelection) {
+        // Замена символов на символы маски
+        const maskedValue = '•'.repeat(realPassword.length);
+
+        // Замена значения на замаскированное
+        input.value = maskedValue;
+
+        // Расчет новой позиции курсора
+        let newCursorPosition = cursorPosition;
+
+        if (hasSelection) {
+            // После замены выделения курсор ставится после введенного символа
+            newCursorPosition = cursorPosition + 1;
+        } else if (input.value.length > lastDisplayedValue.length) {
+            // После добавления курсор сдвигается на количество добавленных символов
+            const addedChars = input.value.length - lastDisplayedValue.length;
+            newCursorPosition = cursorPosition;
+        }
+
+        // Смена позиции курсора
+        input.setSelectionRange(newCursorPosition, newCursorPosition);
+
+        // Запись в последнее введённое значение замаскированного пароля
+        lastDisplayedValue = maskedValue;
+        console.log('Real password:', realPassword);
+    }
+
+    function getRealPassword() {
+        console.log('Пароль:', realPassword);
+    }
+</script>

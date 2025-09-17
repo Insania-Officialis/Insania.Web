@@ -12,8 +12,9 @@
     flex-direction: column;
     margin: auto;
     align-items: center;
-    grid-gap: 2.5rem;
-    min-width: 300px;
+    grid-gap: 3rem;
+    min-width: 40rem;
+    font-size: 2rem;
 }
 
 /*Блок заголовка*/
@@ -48,18 +49,18 @@
 
 /*Форма ввода форм ввода*/
 .authentication-inputs__input {
-    padding-left: 0.5rem;
+    padding: 0 0 .25rem .5rem;
     border-bottom-color: $color__text--primary;
-    border-bottom-width: 0.15rem;
+    border-bottom-width: .25rem;
     border-bottom-style: solid;
 }
 
 /*Кнопки формы действий*/
 .authentication-actions__button {
-    padding: 0.25rem;
+    padding: .25rem;
     text-align: center;
     width: 100%;
-    border-radius: 0.25rem;
+    border-radius: .5rem;
     background-color: $color__text--primary;
     color: $background__body--primary;
 }
