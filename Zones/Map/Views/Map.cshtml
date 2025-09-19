@@ -118,7 +118,7 @@
             map.geoObjects.add(geographyObjectsPolygons);
             geographyObjectsPolygons.add(createPolygon(geographyObjectsCoordinates, 'geographyObjects'));
             map.geoObjects.add(countriesPolygons);
-            countriesPolygons.add(createPolygon(countriesCoordinates, 'politics'));
+            countriesPolygons.add(createPolygonCountry(countriesCoordinates, 'politics'));
             map.geoObjects.add(riversPolygons);
             riversPolygons.add(createPolygon(riversCoordinates, 'rivers'));
 
@@ -197,7 +197,91 @@
     }
 
     //Функция создания полигонов
-    function createPolygon(coordinates, type) {
+    function createPolygon(objects, type) {
+        //Проверки
+        if (!objects?.length) throw new Error('Не указан массив объектов');
+
+        //Формирование переменной результата
+        var polygons = new ymaps.GeoObjectCollection();
+
+        //Проход по массиву объектов
+        for (const object of objects) {
+            try {
+                //Проверки
+                if (!object?.coordinates?.length) throw new Error('Не указаны координаты объекта');
+
+                //Проход по массиву координат объекта
+                for (const coordinate of object.coordinates) {
+                    //Проверки
+                    if (!coordinate?.coordinates?.length) throw new Error('Не указана координата объекта');
+
+                    //Создание полигона
+                    const polygon = new ymaps.GeoObject(
+                        {
+                            //Описание геометрии объекта
+                            geometry: {
+                                type: 'Polygon', //тип
+                                coordinates: coordinate.coordinates //координаты вершин
+                            },
+                            //Описание свойств геоообъекта
+                            properties: {
+                                id: coordinate.id, //идентификатор координаты объекта
+                                objectId: object.id, //идентификатор объекта
+                                coordinateId: coordinate.coordinate_id, //идентификатор координаты
+                                type: type, //тип координат
+                                name: object.name, //наименование объекта
+                                center: object.center, //центр объекта
+                                zoom: object.zoom //масштаб объекта
+                            }
+                        },
+                        //Описание опций геообъекта
+                        {
+                            draggable: false, //Добавление возможности перетаскивания
+                            fillColor: coordinate.background_color, //цвет заливки
+                            strokeColor: coordinate.border_color, //цвет обводки
+                            fillOpacity: 0.75, //общая прозрачность
+                            strokeWidth: 0 //ширина обводка
+                        }
+                    );
+
+                    //Добавление события нажатия
+                    polygon.events.add('contextmenu', viewMenuAction);
+
+                    //Добавление события наведение курсора
+                    polygon.events.add('mouseenter', function (e) {
+                        //Полученик параметров объекта
+                        const id = e.get('target').properties.get('objectId');
+                        const type = e.get('target').properties.get('type');
+                        
+                        //Увеличение прозрачности
+                        highlightPolygons(id, type, 1);
+                    });
+
+                    //Добавление события уведения курсора
+                    polygon.events.add('mouseleave', function (e) {
+                        //Полученик параметров объекта
+                        const id = e.get('target').properties.get('objectId');
+                        const type = e.get('target').properties.get('type');
+                            
+                        //Сброс прозрачности
+                        resetPolygonsOpacity(id, type);
+                    });
+
+                    //Добавление полигона в массив
+                    polygons.add(polygon);
+                }
+            }
+            catch (error) {
+                console.error(`Ошибка обработки координат ${error}`);
+            }
+        }
+
+        //Возврат результата
+        return polygons;
+    }
+
+    //Функция создания полигона страны
+    function createPolygonCountry(coordinates, type) {
         //Проверки
         if (!coordinates?.length) throw new Error('Не указан массив координат');
 
@@ -452,29 +536,14 @@
     //Асинхронная функция получения координат географических объектов
     async function getGeographyObjectsCoordinates() {
         try {
-            //Получение списка географических объектов
-            var geographicObjects = await getGeographyObjectsList(token);
-
-            //Создание массива промисов для параллельных запросов
-            const coordinatesPromises = geographicObjects.map(item => {
-                //Проверка наличия идентификатора
-                if (!item.id) throw new Error(`Не указан идентификатор географического объекта: ${item}`);
-
-                //Возврат результата
-                return getGeographyObjectsCoordinatesList(token, item.id);
-            });
-
-            //Ожидание получения всех координат
-            const coordinatesResults = await Promise.all(coordinatesPromises);
-
-            //Получение корректного списка координат
-            const coordinates = coordinatesResults.filter(item => item !== null && item !== undefined);
+            //Получение списка географических объектов с координатами
+            var geographicObjectsWithCoordinates = await getGeographyObjectsListWithCoordinates(token, [4,6]);
 
             //Проверки
-            if (!coordinates?.length) throw new Error('Не удалось получить координаты географических объектов');
+            if (!geographicObjectsWithCoordinates?.length) throw new Error('Не удалось получить географические объекты с координатами');
 
             //Возврат результата
-            return coordinates;
+            return geographicObjectsWithCoordinates;
         }
         catch (error) {
             console.error(`Ошибка получения координат ${error}`);
@@ -518,29 +587,14 @@
     //Асинхронная функция получения координат рек
     async function getRiversCoordinates() {
         try {
-            //Получение списка рек
-            var rivers = await getGeographyObjectsList(token, true, [8]);
-
-            //Создание массива промисов для параллельных запросов
-            const coordinatesPromises = rivers.map(item => {
-                //Проверка наличия идентификатора
-                if (!item.id) throw new Error(`Не указан идентификатор реки: ${item}`);
-
-                //Возврат результата
-                return getGeographyObjectsCoordinatesList(token, item.id);
-            });
-
-            //Ожидание получения всех координат
-            const coordinatesResults = await Promise.all(coordinatesPromises);
-
-            //Получение корректного списка координат
-            const coordinates = coordinatesResults.filter(item => item !== null && item !== undefined);
+            //Получение списка рек с координатами
+            var riversWithCoordinates = await getGeographyObjectsListWithCoordinates(token, [8]);
 
             //Проверки
-            if (!coordinates?.length) throw new Error('Не удалось получить координаты реки');
+            if (!riversWithCoordinates?.length) throw new Error('Не удалось получить реки с координатами');
 
             //Возврат результата
-            return coordinates;
+            return riversWithCoordinates;
         }
         catch (error) {
             console.error(`Ошибка получения координат ${error}`);
@@ -580,10 +634,9 @@
             try {
                 //Отправка запроса, в зависимости от типа
                 switch (type) {
-                    case 'geographyObjects' : {
+                    case 'geographyObjects': case 'rivers' {
                         var result = await upgradeGeographyObjectsCoordinates(objectId, coordinateId, coordinates, token);
                         console.log(result);
-
                     } break;
                 }
             }

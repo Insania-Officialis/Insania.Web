@@ -41,15 +41,16 @@ async function getGeographyObjectsList(token, has_coordinates = true, type_ids =
     }
 }
 
-//Функция получения координат географических объектов
-async function getGeographyObjectsCoordinatesList(token, geographyObjectId = null) {
+//Функция получения географических объектов с координатами
+async function getGeographyObjectsListWithCoordinates(token, type_ids = [4, 6]) {
     try {
-        //Проверки
-        if (geographyObjectId === null && geographyObjectId === undefined) throw new Error('Не указан идентификатор географического объекта');
-
         //Формирование строки запроса
-        const url = new URL(baseUrlGeographyRead + 'geography_objects_coordinates/list');
-        url.searchParams.append('geography_object_id', geographyObjectId);
+        const url = new URL(baseUrlGeographyRead + 'geography_objects/list_with_coordinates');
+        if (type_ids && type_ids.length) {
+            type_ids.forEach(id => {
+                url.searchParams.append('type_ids', id.toString());
+            });
+        }
 
         //Отправка запроса
         const response = await fetch(url, {
@@ -68,9 +69,10 @@ async function getGeographyObjectsCoordinatesList(token, geographyObjectId = nul
 
         //Проверка структуры ответа
         if (!data?.success) throw new Error(`Неуспешный ответ: ${response.message}`);
+        if (!data?.items?.length) throw new Error('Не указаны географические объекты');
 
         //Возврат ответа
-        return data;
+        return data.items;
     } catch (error) {
         //Вывод ошибки
         console.error(`Ошибка: ${error}`);
