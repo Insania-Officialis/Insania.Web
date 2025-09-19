@@ -634,7 +634,7 @@
             try {
                 //Отправка запроса, в зависимости от типа
                 switch (type) {
-                    case 'geographyObjects': case 'rivers' {
+                    case 'geographyObjects': case 'rivers': {
                         var result = await upgradeGeographyObjectsCoordinates(objectId, coordinateId, coordinates, token);
                         console.log(result);
                     } break;
