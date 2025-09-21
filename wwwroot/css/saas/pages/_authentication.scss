@@ -1,62 +1,62 @@
 ﻿@use '../base/colors' as *;
 
 /*Внешний блок аутентификации*/
-.authentication-block-outer {
+.authentication__outer-block {
     display: flex;
     height: 100%;
 }
 
 /*Внутренний блок аутентификации*/
-.authentication-block-inner {
+.authentication__inner-block {
     display: flex;
     flex-direction: column;
     margin: auto;
     align-items: center;
     grid-gap: 3rem;
-    min-width: 40rem;
-    font-size: 2rem;
+    min-width: 20rem;
+    font-size: 1rem;
 }
 
 /*Блок заголовка*/
-.authentication-title__block {
+.authentication__title-block {
     display: flex;
     margin: auto;
 }
 
 /*Текст заголовка*/
-.authentication-title__text {
+.authentication__title-text {
     font-family: Ofont ru Optimus;
     font-size: 2.5rem;
 }
 
 /*Блоки форм ввода и действий*/
-.authentication-inputs__block, .authentication-actions__block {
+.authentication__inputs-block, .authentication__actions-block {
     display: flex;
     flex-direction: column;
     width: 100%;
 }
 /*Блок формы ввода*/
-.authentication-inputs__block {
+.authentication__inputs-block {
     grid-gap: 1.5rem;
 }
 
 /*Блок формы действий*/
-.authentication-actions__block {
+.authentication__actions-block {
     align-items: center;
     grid-gap: 1rem;
     width: 75%;
 }
 
-/*Форма ввода форм ввода*/
-.authentication-inputs__input {
+/*Элемент ввода формы ввода*/
+.authentication__inputs-input {
     padding: 0 0 .25rem .5rem;
     border-bottom-color: $color__text--primary;
-    border-bottom-width: .25rem;
+    border-bottom-width: .125rem;
     border-bottom-style: solid;
 }
 
-/*Кнопки формы действий*/
-.authentication-actions__button {
+/*Кнопка формы действий*/
+.authentication__actions-button {
     padding: .25rem;
     text-align: center;
     width: 100%;
@@ -65,5 +65,11 @@
     color: $background__body--primary;
 }
 
-.authentication-actions__link {
+/*Ссылка формы действий*/
+.authentication__actions-link {
+}
+
+/*Ссылка формы действий*/
+.authentication__show-password-button {
+    position: absolute;
 }
