@@ -91,6 +91,7 @@ a {
 /*Элемент ввода формы ввода*/
 .authentication__inputs-input {
   padding: 0 0 0.25rem 0.5rem;
+  width: 100%;
   border-bottom-color: hsl(0, 0%, 75%);
   border-bottom-width: 0.125rem;
   border-bottom-style: solid;
@@ -104,12 +105,30 @@ a {
   border-radius: 0.5rem;
   background-color: hsl(0, 0%, 75%);
   color: hsl(0, 0%, 10%);
+  cursor: pointer;
 }
 
 /*Ссылка формы действий*/
-/*Ссылка формы действий*/
-.authentication__show-password-button {
+/*Блок пароля*/
+.authentication__password-block {
+  position: relative;
+  width: 100%;
+}
+
+/*Кнопка видимости пароля*/
+.authentication__password-visibility-button {
   position: absolute;
+  right: 0.5rem;
+  cursor: pointer;
+  opacity: 0.8;
+}
+
+.authentication__password-visibility-button:hover {
+  opacity: 1;
+}
+
+.authentication__password-visibility-button:active {
+  opacity: 1;
 }
 
 .map__block-layer {

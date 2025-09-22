@@ -14,8 +14,15 @@
         </div>
         <div class="authentication__inputs-block">
             <input type="text" id="login" autocomplete="off" placeholder="Логин" class="authentication__inputs-input" />
-            <input type="text" id="password-display" autocomplete="off" placeholder="Пароль" class="authentication__inputs-input" />
-            <input type="hidden" id="password-real" />
+            <div class="authentication__password-block">
+                <input type="text" id="password-display" autocomplete="off" placeholder="Пароль" class="authentication__inputs-input" />
+                <a id="password-toggle" class="authentication__password-visibility-button"
+                   onmousedown="showPassword()" onmouseup="hidePassword()" onmouseleave="hidePassword()"
+                   ontouchstart="showPassword()" ontouchend="hidePassword()" ontouchcancel="hidePassword()">
+                    👁
+                </a>
+                <input type="hidden" id="password-real" />
+            </div>
         </div>
         <div id="authentication_buttons" class="authentication__actions-block">
             <a class="authentication__actions-button">Войти</a>
@@ -191,6 +198,24 @@
 
             //Восстановление выделения
             selectionEnd = selectionStart;
+            restoreSelection();
+        }
+    }
+
+    //Функция показа пароля
+    function showPassword() {
+        //Отображение пароля, если он есть
+        if (realInput.value.length > 0) displayInput.value = realInput.value;
+    }
+
+    //Функция скрытия пароля
+    function hidePassword() {
+        //Если есть пароль
+        if (realInput.value.length > 0) {
+            //Замена символов
+            displayInput.value = '•'.repeat(realInput.value.length);
+
+            //Восстановление выделения
             restoreSelection();
         }
     }
