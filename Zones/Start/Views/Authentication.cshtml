@@ -229,9 +229,14 @@
         const loginValue = loginInput.value;
         const passwordValue = passwordRealInput.value;
 
+        //Проверка параметров
+        if (!loginValue || !passwordValue) throw new Error('Не указаны обязательные поля');
+
         //Получение ответа с сервера
         const response = await login(loginValue, passwordValue);
-        console.log(response);
+
+        //Запись токена в локальное хранилище
+        localStorage.setItem('token', response);
     }
 
     //Инициализация
