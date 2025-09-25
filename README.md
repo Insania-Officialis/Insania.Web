@@ -43,6 +43,7 @@
 	* opacity - прозрачность
 	* text-decoration - оформление текста
 	* appearance - стили элементов для платформы
+	* aspect-ratio - сохранение пропорций
 * Шрифт
 	* font-family - семейство шрифта
 	* font-size - размер шрифта

@@ -1,7 +1,10 @@
-﻿/*Базовые*/
+/*Базовые*/
 @use 'saas/base/colors' as *;
 @use 'saas/base/elements' as *;
 @use 'saas/base/fonts' as *;
+
+/*Компоненты*/
+@use 'saas/components/spinner' as *;
 
 /*Страницы*/
 @use 'saas/pages/authentication' as *;

@@ -39,6 +39,38 @@ a {
   font-family: "Ofont ru Optimus";
   src: url("/fonts/Ofont_ru_Optimus.ttf");
 }
+/*Компоненты*/
+/*Блок колеса загрузки*/
+.spinner__block {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 1.4em;
+  width: 1.4em;
+}
+
+/*Элемент колеса загрузки*/
+.spinner__element {
+  height: 100%;
+  max-height: 5rem;
+  width: 100%;
+  max-width: 5rem;
+  border: 0.2em solid hsl(0, 0%, 10%);
+  border-top: 0.2em solid hsl(0, 0%, 75%);
+  border-radius: 50%;
+  aspect-ratio: 1/1;
+  animation: spin 1s linear infinite;
+}
+
+/*Анимация spin*/
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
 /*Страницы*/
 /*Внешний блок аутентификации*/
 .authentication__outer-block {
@@ -99,7 +131,10 @@ a {
 
 /*Кнопка формы действий*/
 .authentication__actions-button {
+  display: flex;
   padding: 0.25rem;
+  align-items: center;
+  justify-content: center;
   text-align: center;
   width: 100%;
   border-radius: 0.5rem;

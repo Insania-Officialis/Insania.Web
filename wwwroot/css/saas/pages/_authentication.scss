@@ -58,7 +58,10 @@
 
 /*Кнопка формы действий*/
 .authentication__actions-button {
+    display: flex;
     padding: .25rem;
+    align-items: center;
+    justify-content: center;
     text-align: center;
     width: 100%;
     border-radius: .5rem;
