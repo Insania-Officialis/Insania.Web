@@ -37,6 +37,39 @@ async function getCountriesList(token, has_coordinates = true) {
     }
 }
 
+//Функция получения стран с координатами
+async function getCountriesListWithCoordinates(token) {
+    try {
+        //Формирование строки запроса
+        const url = new URL(baseUrlPoliticsRead + 'countries/list_with_coordinates');
+
+        //Отправка запроса
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            }
+        });
+
+        //Проверка статуса ответа
+        if (!response.ok) throw new Error(`Некорректный статус ответа: ${response.status}`);
+
+        //Преобразование ответа в json
+        const data = await response.json();
+
+        //Проверка структуры ответа
+        if (!data?.success) throw new Error(`Неуспешный ответ: ${response.message}`);
+        if (!data?.items?.length) throw new Error('Не указаны страны');
+
+        //Возврат ответа
+        return data.items;
+    } catch (error) {
+        //Вывод ошибки
+        console.error(`Ошибка: ${error}`);
+    }
+}
+
 //Функция получения координат стран
 async function getCountriesCoordinatesList(token, countryId = null) {
     try {

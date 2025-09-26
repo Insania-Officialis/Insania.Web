@@ -118,7 +118,7 @@
             map.geoObjects.add(geographyObjectsPolygons);
             geographyObjectsPolygons.add(createPolygon(geographyObjectsCoordinates, 'geographyObjects'));
             map.geoObjects.add(countriesPolygons);
-            countriesPolygons.add(createPolygonCountry(countriesCoordinates, 'politics'));
+            countriesPolygons.add(createPolygon(countriesCoordinates, 'politics'));
             map.geoObjects.add(riversPolygons);
             riversPolygons.add(createPolygon(riversCoordinates, 'rivers'));
 
@@ -554,29 +554,14 @@
     //Асинхронная функция получения координат стран
     async function getCountriesCoordinates() {
         try {
-            //Получение списка стран
-            var countries = await getCountriesList(token);
-
-            //Создание массива промисов для параллельных запросов
-            const coordinatesPromises = countries.map(item => {
-                //Проверка наличия идентификатора
-                if (!item.id) throw new Error(`Не указан идентификатор страны: ${item}`);
-
-                //Возврат результата
-                return getCountriesCoordinatesList(token, item.id);
-            });
-
-            //Ожидание получения всех координат
-            const coordinatesResults = await Promise.all(coordinatesPromises);
-
-            //Получение корректного списка координат
-            const coordinates = coordinatesResults.filter(item => item !== null && item !== undefined);
+            //Получение списка стран с координатами
+            var countriesWithCoordinates = await getCountriesListWithCoordinates(token);
 
             //Проверки
-            if (!coordinates?.length) throw new Error('Не удалось получить координаты страны');
+            if (!countriesWithCoordinates?.length) throw new Error('Не удалось получить страны с координатами');
 
             //Возврат результата
-            return coordinates;
+            return countriesWithCoordinates;
         }
         catch (error) {
             console.error(`Ошибка получения координат ${error}`);
