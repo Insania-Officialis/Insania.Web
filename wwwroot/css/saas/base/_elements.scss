@@ -24,7 +24,11 @@ a {
 }
 
 /*Основной блок*/
-.base-block__div {
+.base__block {
     height: 100%;
     background-color: $background__body--primary;
+}
+
+.base__text--error {
+    color: $color__text--errror;
 }

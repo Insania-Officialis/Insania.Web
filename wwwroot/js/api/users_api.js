@@ -17,11 +17,12 @@ async function login(login = 'guest', password = '1') {
             }
         });
 
-        //Проверка статуса ответа
-        if (!response.ok) throw new Error(`Некорректный статус ответа: ${response.status}`);
-
         //Преобразование ответа в json
         const data = await response.json();
+
+        //Проверка статуса ответа
+        if (response.status === 400 && data.message) throw new Error(data.message)
+        else if (!response.ok) throw new Error(`Некорректный статус ответа: ${response.status}`);
 
         //Проверка структуры ответа
         if (!data?.success) throw new Error(`Неуспешный ответ: ${response.message}`);
@@ -30,7 +31,13 @@ async function login(login = 'guest', password = '1') {
         //Возврат ответа
         return data.token;
     } catch (error) {
+        //Формирование текста ошибки
+        let message = `Ошибка сервера: ${error.message}`;
+
         //Вывод ошибки
-        console.error(`Ошибка: ${error}`);
+        console.error(message);
+
+        //Проброс ошибки
+        throw new Error(message);
     }
 }

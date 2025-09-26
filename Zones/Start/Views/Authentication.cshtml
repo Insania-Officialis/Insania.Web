@@ -25,6 +25,7 @@
                 </a>
                 <input type="hidden" id="autenticication-input-password-real" />
             </div>
+            <span id="autenticication-text-error" class="base__text--error" style="display: none">Ошибка</span>
         </div>
         <div class="authentication__actions-block">
             <a class="authentication__actions-button">
@@ -47,6 +48,7 @@
     let loginInput = document.getElementById("autenticication-input-password-login"); //компонент логина
     let spinner = document.getElementById("spinner"); //компонент колеса загрузки
     let textLogin = document.getElementById("autentification-text-login"); //компонент текста входа
+    let textError = document.getElementById("autenticication-text-error"); //компонент текста ошибки
     let selectionStart = 0; //начало выделения
     let selectionEnd = 0; //конец выделение
 
@@ -228,28 +230,45 @@
         }
     }
 
+    //Функция отображения ошибки
+    function showError(text) {
+        //Ошибка, если нет компонента текста ошибки
+        if (!textError) throw new Error("Не определён компонент текста ошибки");
+
+        //Смена текста ошибки
+        textError.innerText = text;
+
+        //Смена состояния видимости ошибки
+        textError.style = "display: block";
+    }
+
     //Функция аутентификации
     async function authentication() {
-        //Показ колеса загрузки
-        textLogin.style="display: none";
-        spinner.style="display: inline-flex";
+        try {
+            //Показ колеса загрузки
+            textLogin.style = "display: none";
+            spinner.style = "display: inline-flex";
 
-        //Получение параметров
-        const loginValue = loginInput.value;
-        const passwordValue = passwordRealInput.value;
+            //Получение параметров
+            const loginValue = loginInput.value;
+            const passwordValue = passwordRealInput.value;
 
-        //Проверка параметров
-        if (!loginValue || !passwordValue) throw new Error("Не указаны обязательные поля");
+            //Проверка параметров
+            if (!loginValue || !passwordValue) throw new Error("Не указаны обязательные поля");
 
-        //Получение ответа с сервера
-        const response = await login(loginValue, passwordValue);
+            //Получение ответа с сервера
+            const response = await login(loginValue, passwordValue);
 
-        //Запись токена в локальное хранилище
-        localStorage.setItem("token", response);
-
-        //Скрытие колеса загрузки
-        textLogin.style="display: inline-flex";
-        spinner.style="display: none";
+            //Запись токена в локальное хранилище
+            localStorage.setItem("token", response);
+        } catch(error) {
+            //Отображение ошибки
+            showError(error.message);
+        } finally {
+            //Скрытие колеса загрузки
+            textLogin.style = "display: inline-flex";
+            spinner.style = "display: none";
+        }
     }
 
     //Инициализация
