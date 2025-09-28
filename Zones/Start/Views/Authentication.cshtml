@@ -15,27 +15,27 @@
             </div>
         </div>
         <div class="authentication__inputs-block">
-            <input type="text" id="autenticication-input-password-login" autocomplete="off" placeholder="Логин" class="authentication__inputs-input" />
+            <input type="text" id="authentication-input-login" autocomplete="off" placeholder="Логин" class="authentication__inputs-input" />
             <div class="authentication__password-block">
-                <input type="text" id="autenticication-input-password-display" autocomplete="off" placeholder="Пароль" class="authentication__inputs-input" />
-                <a id="autentification-button-password-show" class="authentication__password-visibility-button"
+                <input type="text" id="authentication-input-password-display" autocomplete="off" placeholder="Пароль" class="authentication__inputs-input" />
+                <a id="authentication-button-password-show" class="authentication__password-visibility-button"
                    onmousedown="showPassword()" onmouseup="hidePassword()" onmouseleave="hidePassword()"
                    ontouchstart="showPassword()" ontouchend="hidePassword()" ontouchcancel="hidePassword()">
                     👁
                 </a>
-                <input type="hidden" id="autenticication-input-password-real" />
+                <input type="hidden" id="authentication-input-password-real" />
             </div>
-            <span id="autenticication-text-error" class="base__text--error" style="display: none">Ошибка</span>
+            <span id="authentication-text-error" class="base__text--error" style="display: none">Ошибка</span>
         </div>
         <div class="authentication__actions-block">
-            <a class="authentication__actions-button">
-                <span id="autentification-text-login">Войти</span>
+            <a id="authentication-button-login" class="authentication__actions-button">
+                <span id="authentication-text-login">Войти</span>
                 <partial name="/Zones/Shared/Spinner/Spinner.cshtml" />
             </a>
-            <a class="authentication__actions-button">Зарегистрироваться</a>
+            <a id="authentication-button-registration" class="authentication__actions-button">Зарегистрироваться</a>
         </div>
         <div class="authentication__actions-block">
-            <a class="authentication__actions-link">Забыли пароль?</a>
+            <a id="authentication-link-resotre-password" class="authentication__actions-link">Забыли пароль?</a>
         </div>
     </div>
 </div>
@@ -43,12 +43,15 @@
 <script>
     //Объявление общих переменных
     let realPassword = ""; //реальный пароль
-    let passwordDisplayInput = document.getElementById("autenticication-input-password-display"); //компонент отоброжаемого пароля
-    let passwordRealInput = document.getElementById("autenticication-input-password-real"); //компонент реального пароля
-    let loginInput = document.getElementById("autenticication-input-password-login"); //компонент логина
+    let passwordDisplayInput = document.getElementById("authentication-input-password-display"); //компонент отоброжаемого пароля
+    let passwordRealInput = document.getElementById("authentication-input-password-real"); //компонент реального пароля
+    let loginInput = document.getElementById("authentication-input-login"); //компонент логина
+    let loginButton = document.getElementById("authentication-button-login"); //кнопка логина
+    let registrationButton = document.getElementById("authentication-button-registration"); //кнопка регистрации
+    let restorePasswordLink = document.getElementById("authentication-link-resotre-password"); //ссылка восстановления пароля
     let spinner = document.getElementById("spinner"); //компонент колеса загрузки
-    let textLogin = document.getElementById("autentification-text-login"); //компонент текста входа
-    let textError = document.getElementById("autenticication-text-error"); //компонент текста ошибки
+    let loginText = document.getElementById("authentication-text-login"); //компонент текста входа
+    let errorText = document.getElementById("authentication-text-error"); //компонент текста ошибки
     let selectionStart = 0; //начало выделения
     let selectionEnd = 0; //конец выделение
 
@@ -233,21 +236,28 @@
     //Функция отображения ошибки
     function showError(text) {
         //Ошибка, если нет компонента текста ошибки
-        if (!textError) throw new Error("Не определён компонент текста ошибки");
+        if (!errorText) throw new Error("Не определён компонент текста ошибки");
 
         //Смена текста ошибки
-        textError.innerText = text;
+        errorText.innerText = text;
 
         //Смена состояния видимости ошибки
-        textError.style = "display: block";
+        errorText.style = "display: block";
     }
 
     //Функция аутентификации
     async function authentication() {
         try {
             //Показ колеса загрузки
-            textLogin.style = "display: none";
+            loginText.style = "display: none";
             spinner.style = "display: inline-flex";
+
+            //Блокировка компонентов
+            loginInput.disabled = true;
+            passwordDisplayInput.disabled = true;
+            loginButton.classList.add('authentication__actions-button--disabled');
+            registrationButton.classList.add('authentication__actions-button--disabled');
+            restorePasswordLink.classList.add('authentication__actions-link--disabled');
 
             //Получение параметров
             const loginValue = loginInput.value;
@@ -257,6 +267,7 @@
             if (!loginValue || !passwordValue) throw new Error("Не указаны обязательные поля");
 
             //Получение ответа с сервера
+            //await new Promise(resolve => setTimeout(resolve, 5000));
             const response = await login(loginValue, passwordValue);
 
             //Запись токена в локальное хранилище
@@ -266,8 +277,15 @@
             showError(error.message);
         } finally {
             //Скрытие колеса загрузки
-            textLogin.style = "display: inline-flex";
+            loginText.style = "display: inline-flex";
             spinner.style = "display: none";
+
+            //Разблокировка компонентов
+            loginInput.disabled = false;
+            passwordDisplayInput.disabled = false;
+            loginButton.classList.remove('authentication__actions-button--disabled');
+            registrationButton.classList.remove('authentication__actions-button--disabled');
+            restorePasswordLink.classList.remove('authentication__actions-link--disabled');
         }
     }
 

@@ -147,7 +147,19 @@ a {
   cursor: pointer;
 }
 
+/*Заблокированная кнопка формы действий*/
+.authentication__actions-button--disabled {
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
 /*Ссылка формы действий*/
+/*Заблокированная ссылка формы действий*/
+.authentication__actions-link--disabled {
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
 /*Блок пароля*/
 .authentication__password-block {
   position: relative;

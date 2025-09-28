@@ -70,9 +70,22 @@
     cursor: pointer;
 }
 
+/*Заблокированная кнопка формы действий*/
+.authentication__actions-button--disabled {
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
 /*Ссылка формы действий*/
 .authentication__actions-link {
 }
+
+/*Заблокированная ссылка формы действий*/
+.authentication__actions-link--disabled {
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
 
 /*Блок пароля*/
 .authentication__password-block {
