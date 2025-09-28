@@ -1,41 +1,41 @@
-#Название рабочего процесса
+# Название рабочего процесса
 name: CI/CD Pipeline
 
-#Триггеры запуска сборки:
+# Триггеры запуска сборки:
 on:
-  #При пуше в ветку
+  # При пуше в ветку
   push:    
-    #Список веток
+    # Список веток
     branches: [ main ]
 
-#Определение заданий
+# Определение заданий
 jobs:
-  #Задание для сборки
+  # Задание для сборки
   build:
-    #Запуск на собственных серверах
+    # Запуск на собственных серверах
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [insania-linux-server, insania-windows-server]
 
-    #Шаги выполнения задания
+    # Шаги выполнения задания
     steps:
-    #Настройка для Linux
-    - name: Setup Linux environment
+    # Настройка для Linux
+    - name: Настройка окружения Linux
       if: runner.os == 'Linux'
       run: |
         echo "WORKDIR=/app" >> $GITHUB_ENV
       shell: bash
 
-    #Настройка для Windows
-    - name: Setup Windows environment
+    # Настройка для Windows
+    - name: Настройка окружения Windows
       if: runner.os == 'Windows'
       run: |
         echo "WORKDIR=C:/Insania" >> $env:GITHUB_ENV
       shell: powershell
 
-    #Обновление кода для Linux
-    - name: Update code (Linux)
+    # Обновление кода для Linux
+    - name: Обновление кода (Linux)
       if: runner.os == 'Linux'
       run: |
         cd "$WORKDIR"
@@ -43,8 +43,8 @@ jobs:
         git pull
       shell: bash
 
-    #Обновление кода для Windows
-    - name: Update code (Windows)
+    # Обновление кода для Windows
+    - name: Обновление кода (Windows)
       if: runner.os == 'Windows'
       run: |
         cd $env:WORKDIR
@@ -52,87 +52,87 @@ jobs:
         git pull
       shell: powershell
 
-    #Остановка контейнера для Linux
-    - name: Stop container (Linux)
+    # Остановка контейнера для Linux
+    - name: Остановка контейнера (Linux)
       if: runner.os == 'Linux'
       run: |
         cd "$WORKDIR"
         docker-compose stop insania_web
       shell: bash
 
-    #Остановка контейнера для Windows
-    - name: Stop container (Windows)
+    # Остановка контейнера для Windows
+    - name: Остановка контейнера (Windows)
       if: runner.os == 'Windows'
       run: |
         cd $env:WORKDIR
         docker-compose stop insania_web
       shell: powershell
 
-    #Сборка контейнера для Linux
-    - name: Build container (Linux)
+    # Сборка контейнера для Linux
+    - name: Сборка контейнера (Linux)
       if: runner.os == 'Linux'
       run: |
         cd "$WORKDIR"
         docker-compose build insania_web
       shell: bash
 
-    #Сборка контейнера для Windows
-    - name: Build container (Windows)
+    # Сборка контейнера для Windows
+    - name: Сборка контейнера (Windows)
       if: runner.os == 'Windows'
       run: |
         cd $env:WORKDIR
         docker-compose build insania_web
       shell: powershell
 
-    #Запуск контейнера для Linux
-    - name: Start container (Linux)
+    # Запуск контейнера для Linux
+    - name: Запуск контейнера (Linux)
       if: runner.os == 'Linux'
       run: |
         cd "$WORKDIR"
         docker-compose up -d insania_web
       shell: bash
 
-    #Запуск контейнера для Windows
-    - name: Start container (Windows)
+    # Запуск контейнера для Windows
+    - name: Запуск контейнера (Windows)
       if: runner.os == 'Windows'
       run: |
         cd $env:WORKDIR
         docker-compose up -d insania_web
       shell: powershell
 
-    #Проверка статуса контейнера для Linux
-    - name: Verify container status (Linux)
+    # Проверка статуса контейнера для Linux
+    - name: Проверка статуса контейнера (Linux)
       if: runner.os == 'Linux'
       run: |
         cd "$WORKDIR"
         sleep 10
         status=$(docker-compose ps insania_web)
-        echo "Container status: $status"
+        echo "Статус контейнера: $status"
         
         if echo "$status" | grep -q "Up"; then
-          echo "✅ Container is running successfully!"
+          echo "✅ Контейнер успешно запущен!"
           docker-compose ps
         else
-          echo "❌ Container failed to start"
+          echo "❌ Не удалось запустить контейнер"
           docker-compose logs insania_web --tail=20
           exit 1
         fi
       shell: bash
 
-    #Проверка статуса контейнера для Windows
-    - name: Verify container status (Windows)
+    # Проверка статуса контейнера для Windows
+    - name: Проверка статуса контейнера (Windows)
       if: runner.os == 'Windows'
       run: |
         cd $env:WORKDIR
         Start-Sleep -Seconds 10
         $status = docker-compose ps insania_web
-        Write-Host "Container status: $status"
+        Write-Host "Статус контейнера: $status"
         
         if ($status -like "*Up*") {
-          Write-Host "✅ Container is running successfully!"
+          Write-Host "✅ Контейнер успешно запущен!"
           docker-compose ps
         } else {
-          Write-Host "❌ Container failed to start"
+          Write-Host "❌ Не удалось запустить контейнер"
           docker-compose logs insania_web --tail=20
           exit 1
         }
