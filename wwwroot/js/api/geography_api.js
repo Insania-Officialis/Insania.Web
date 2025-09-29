@@ -2,6 +2,10 @@
 const baseUrlGeographyRead = 'http://192.168.31.234:7086/';
 const baseUrlGeographyCommit = 'http://192.168.31.234:7087/';
 
+//Константы для кэширования
+const cacheGeographyName = 'geography-cache';
+const cacheGeographyMaxAge = 86400000; // 24 часа
+
 //Функция получения географических объектов
 async function getGeographyObjectsList(token, has_coordinates = true, type_ids = [4,6]) {
     try {
@@ -52,6 +56,30 @@ async function getGeographyObjectsListWithCoordinates(token, type_ids = [4, 6]) 
             });
         }
 
+        //Создание ключа кэша
+        const cacheKey = url.toString();
+
+        //Получение кэша
+        const cache = await caches.open(cacheGeographyName);
+
+        //Поиск данных в кэше
+        const cachedResponse = await cache.match(cacheKey);
+
+        //Если есть данные в кэше
+        if (cachedResponse) {
+            //Получение даты записи в кэш
+            const dateValue = cachedResponse.headers.get('date');
+
+            //Получение даты завершения времени жизни кэша
+            const exp = Date.parse(dateValue ?? '') + cacheGeographyMaxAge;
+
+            //Возврат данных при их наличии в кэше
+            if (Date.now() < exp) {
+                const data = await cachedResponse.json();
+                return data;
+            }
+        }
+
         //Отправка запроса
         const response = await fetch(url, {
             method: 'GET',
@@ -64,8 +92,14 @@ async function getGeographyObjectsListWithCoordinates(token, type_ids = [4, 6]) 
         //Проверка статуса ответа
         if (!response.ok) throw new Error(`Некорректный статус ответа: ${response.status}`);
 
+        //Копирование ответа для избежания конфликта чтения одного потока
+        const clone = response.clone();
+
+        //Запись в кэш
+        await cache.put(cacheKey, response);
+
         //Преобразование ответа в json
-        const data = await response.json();
+        const data = await clone.json();
 
         //Проверка структуры ответа
         if (!data?.success) throw new Error(`Неуспешный ответ: ${response.message}`);

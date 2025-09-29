@@ -1,6 +1,10 @@
 ﻿//Объявление переменной ссылки на api работы с политикиой
 const baseUrlPoliticsRead = 'http://192.168.31.234:7083/';
 
+//Константы для кэширования
+const cachePoliticsName = 'politics-cache';
+const cachePoliticsMaxAge = 86400000; // 24 часа
+
 //Функция получения стран
 async function getCountriesList(token, has_coordinates = true) {
     try {
@@ -43,6 +47,30 @@ async function getCountriesListWithCoordinates(token) {
         //Формирование строки запроса
         const url = new URL(baseUrlPoliticsRead + 'countries/list_with_coordinates');
 
+        //Создание ключа кэша
+        const cacheKey = url.toString();
+
+        //Получение кэша
+        const cache = await caches.open(cachePoliticsName);
+
+        //Поиск данных в кэше
+        const cachedResponse = await cache.match(cacheKey);
+
+        //Если есть данные в кэше
+        if (cachedResponse) {
+            //Получение даты записи в кэш
+            const dateValue = cachedResponse.headers.get('date');
+
+            //Получение даты завершения времени жизни кэша
+            const exp = Date.parse(dateValue ?? '') + cachePoliticsMaxAge;
+
+            //Возврат данных при их наличии в кэше
+            if (Date.now() < exp) {
+                const data = await cachedResponse.json();
+                return data;
+            }
+        }
+
         //Отправка запроса
         const response = await fetch(url, {
             method: 'GET',
@@ -55,8 +83,14 @@ async function getCountriesListWithCoordinates(token) {
         //Проверка статуса ответа
         if (!response.ok) throw new Error(`Некорректный статус ответа: ${response.status}`);
 
+        //Копирование ответа для избежания конфликта чтения одного потока
+        const clone = response.clone();
+
+        //Запись в кэш
+        await cache.put(cacheKey, response);
+
         //Преобразование ответа в json
-        const data = await response.json();
+        const data = await clone.json();
 
         //Проверка структуры ответа
         if (!data?.success) throw new Error(`Неуспешный ответ: ${response.message}`);
