@@ -59,24 +59,30 @@ async function getGeographyObjectsListWithCoordinates(token, type_ids = [4, 6]) 
         //Создание ключа кэша
         const cacheKey = url.toString();
 
-        //Получение кэша
-        const cache = await caches.open(cacheGeographyName);
+        //Создание переменной кэша
+        let cache = undefined;
 
-        //Поиск данных в кэше
-        const cachedResponse = await cache.match(cacheKey);
+        //Если доступен кэш
+        if (caches) {
+            //Получение кэша
+            cache = await caches.open(cacheGeographyName);
 
-        //Если есть данные в кэше
-        if (cachedResponse) {
-            //Получение даты записи в кэш
-            const dateValue = cachedResponse.headers.get('date');
+            //Поиск данных в кэше
+            const cachedResponse = await cache.match(cacheKey);
 
-            //Получение даты завершения времени жизни кэша
-            const exp = Date.parse(dateValue ?? '') + cacheGeographyMaxAge;
+            //Если есть данные в кэше
+            if (cachedResponse) {
+                //Получение даты записи в кэш
+                const dateValue = cachedResponse.headers.get('Date');
 
-            //Возврат данных при их наличии в кэше
-            if (Date.now() < exp) {
-                const data = await cachedResponse.json();
-                return data;
+                //Получение даты завершения времени жизни кэша
+                const exp = Date.parse(dateValue ?? '') + cacheGeographyMaxAge;
+
+                //Возврат данных при их наличии в кэше
+                if (Date.now() < exp) {
+                    const data = await cachedResponse.json();
+                    return data.items;
+                }
             }
         }
 
@@ -89,17 +95,33 @@ async function getGeographyObjectsListWithCoordinates(token, type_ids = [4, 6]) 
             }
         });
 
-        //Проверка статуса ответа
-        if (!response.ok) throw new Error(`Некорректный статус ответа: ${response.status}`);
-
         //Копирование ответа для избежания конфликта чтения одного потока
         const clone = response.clone();
 
-        //Запись в кэш
-        await cache.put(cacheKey, response);
+        //Проверка статуса ответа
+        if (!response.ok) throw new Error(`Некорректный статус ответа: ${response.status}`);
+
+        //Если доступен кэш
+        if (cache) {
+            //Копирование заголовков
+            const headers = new Headers(clone.headers);
+
+            //Запись даты
+            headers.set('Date', new Date().toUTCString());
+
+            //Формирование запроса
+            const responseToCache = new Response(clone.body, {
+                status: clone.status,
+                statusText: clone.statusText,
+                headers: headers
+            });
+
+            //Запись в кэш
+            await cache.put(cacheKey, responseToCache);
+        }
 
         //Преобразование ответа в json
-        const data = await clone.json();
+        const data = await response.json();
 
         //Проверка структуры ответа
         if (!data?.success) throw new Error(`Неуспешный ответ: ${response.message}`);
