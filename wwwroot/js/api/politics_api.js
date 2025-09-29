@@ -54,7 +54,7 @@ async function getCountriesListWithCoordinates(token) {
         let cache = undefined;
 
         //Если доступен кэш
-        if (caches) {
+        if (isCacheAvailable) {
             //Получение кэша
             cache = await caches.open(cachePoliticsName);
 
@@ -92,8 +92,11 @@ async function getCountriesListWithCoordinates(token) {
         //Проверка статуса ответа
         if (!response.ok) throw new Error(`Некорректный статус ответа: ${response.status}`);
 
+        //Проверка доступности кэша
+        const isCacheAvailable = typeof caches !== 'undefined' && caches;
+
         //Если доступен кэш
-        if (cache) {
+        if (isCacheAvailable) {
             //Копирование заголовков
             const headers = new Headers(clone.headers);
 
