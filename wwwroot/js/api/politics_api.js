@@ -53,6 +53,9 @@ async function getCountriesListWithCoordinates(token) {
         //Создание переменной кэша
         let cache = undefined;
 
+        //Проверка доступности кэша
+        const isCacheAvailable = typeof caches !== 'undefined' && caches;
+
         //Если доступен кэш
         if (isCacheAvailable) {
             //Получение кэша
@@ -91,9 +94,6 @@ async function getCountriesListWithCoordinates(token) {
 
         //Проверка статуса ответа
         if (!response.ok) throw new Error(`Некорректный статус ответа: ${response.status}`);
-
-        //Проверка доступности кэша
-        const isCacheAvailable = typeof caches !== 'undefined' && caches;
 
         //Если доступен кэш
         if (isCacheAvailable) {
