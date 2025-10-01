@@ -1,6 +1,6 @@
 @use '../base/colors' as *;
 
-/*Блок колеса загрузки*/
+//Блок колеса загрузки
 .spinner__block {
     display: inline-flex;
     align-items: center;
@@ -9,7 +9,7 @@
     width: 1.4em;
 }
 
-/*Элемент колеса загрузки*/
+//Элемент колеса загрузки
 .spinner__element {
     height: 100%;
     max-height: 5rem;
@@ -22,7 +22,7 @@
     animation: spin 1s linear infinite;
 }
 
-/*Анимация spin*/
+//Анимация spin
 @keyframes spin {
     0% {
         transform: rotate(0deg);

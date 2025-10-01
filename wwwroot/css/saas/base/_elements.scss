@@ -1,34 +1,33 @@
 ﻿@use 'colors' as *;
 
-/*Страница*/
+//Страница
 html {
     height: 100%;
     font-size: 16px;
 }
 
-/*Тело страницы*/
+//Тело страницы
 body {
     height: 100%;
     color: $color__text--primary;
     font-family: Georgia;
 }
 
-/*Поля ввода*/
+//Поля ввода
 input {
     color: $color__text--primary;
 }
 
-/*Ссылки*/
+//Ссылки
 a {
     color: $color__text--primary;
 }
 
-/*Основной блок*/
+//Основной блок
 .base__block {
     height: 100%;
     background-color: $background__body--primary;
 }
-
 .base__text--error {
     color: $color__text--errror;
 }

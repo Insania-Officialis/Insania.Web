@@ -67,9 +67,15 @@
             token = await login();
 
             //Получение координат
-            geographyObjectsCoordinates = await getGeographyObjectsCoordinates();
-            countriesCoordinates = await getCountriesCoordinates();
-            riversCoordinates = await getRiversCoordinates();
+            try {
+                [geographyObjectsCoordinates, countriesCoordinates, riversCoordinates] = await Promise.all([
+                    getGeographyObjectsCoordinates(),
+                    getCountriesCoordinates(),
+                    getRiversCoordinates()
+                ]);
+            } catch (error) {
+                console.error('Ошибка при загрузке координат:', error);
+            }
 
             //Создание фона карты
             let layer = createMapBackground();
